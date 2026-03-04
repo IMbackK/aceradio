@@ -4,7 +4,8 @@
 AudioPlayer::AudioPlayer(QObject *parent)
     : QObject(parent),
       mediaPlayer(new QMediaPlayer(this)),
-      audioOutput(new QAudioOutput(this))
+      audioOutput(new QAudioOutput(this)),
+      positionTimer(new QTimer(this))
 {
     // Set up audio output with default device
     mediaPlayer->setAudioOutput(audioOutput);
@@ -13,6 +14,14 @@ AudioPlayer::AudioPlayer(QObject *parent)
             this, &AudioPlayer::handlePlaybackStateChanged);
     connect(mediaPlayer, &QMediaPlayer::mediaStatusChanged,
             this, &AudioPlayer::handleMediaStatusChanged);
+    
+    // Set up position timer for updating playback position
+    positionTimer->setInterval(500); // Update every 500ms
+    connect(positionTimer, &QTimer::timeout, [this]() {
+        if (isPlaying()) {
+            emit positionChanged(mediaPlayer->position());
+        }
+    });
 }
 
 AudioPlayer::~AudioPlayer()
@@ -28,11 +37,36 @@ void AudioPlayer::play(const QString &filePath)
     
     mediaPlayer->setSource(QUrl::fromLocalFile(filePath));
     mediaPlayer->play();
+    
+    // Start position timer
+    positionTimer->start();
+}
+
+void AudioPlayer::play()
+{
+    if (!isPlaying()) {
+        mediaPlayer->play();
+        positionTimer->start();
+    }
+}
+
+void AudioPlayer::pause()
+{
+    if (isPlaying()) {
+        mediaPlayer->pause();
+        positionTimer->stop();
+    }
+}
+
+void AudioPlayer::setPosition(int position)
+{
+    mediaPlayer->setPosition(position);
 }
 
 void AudioPlayer::stop()
 {
     mediaPlayer->stop();
+    positionTimer->stop();
 }
 
 bool AudioPlayer::isPlaying() const
@@ -69,7 +103,11 @@ void AudioPlayer::handleMediaStatusChanged(QMediaPlayer::MediaStatus status)
         emit playbackFinished();
     } else if (status == QMediaPlayer::LoadedMedia || 
                status == QMediaPlayer::BufferedMedia) {
-        // Media loaded successfully
+        // Media loaded successfully, emit duration
+        int duration = mediaPlayer->duration();
+        if (duration > 0) {
+            emit durationChanged(duration);
+        }
     } else if (status == QMediaPlayer::InvalidMedia) {
         emit playbackError(mediaPlayer->errorString());
     }

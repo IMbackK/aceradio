@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
       playbackTimer(new QTimer(this)),
       currentSongIndex(-1),
       isPlaying(false),
+      isPaused(false),
       shuffleMode(false)
 {
     ui->setupUi(this);
@@ -111,11 +112,42 @@ void MainWindow::saveSettings()
     settings.setValue("vaeModelPath", vaeModelPath);
 }
 
+QString MainWindow::formatTime(int milliseconds)
+{
+    if (milliseconds < 0) return "0:00";
+    
+    int seconds = milliseconds / 1000;
+    int minutes = seconds / 60;
+    seconds = seconds % 60;
+    
+    return QString("%1:%2").arg(minutes).arg(seconds, 2, 10, QChar('0'));
+}
+
+void MainWindow::updatePosition(int position)
+{
+    if (position < 0) return;
+    
+    // Update slider and time labels
+    ui->positionSlider->setValue(position);
+    ui->elapsedTimeLabel->setText(formatTime(position));
+}
+
+void MainWindow::updateDuration(int duration)
+{
+    if (duration <= 0) return;
+    
+    // Set slider range and update duration label
+    ui->positionSlider->setRange(0, duration);
+    ui->durationLabel->setText(formatTime(duration));
+}
+
 void MainWindow::updateControls()
 {
     bool hasSongs = songModel->rowCount() > 0;
     
-    ui->playButton->setEnabled(hasSongs && !isPlaying);
+    // Play button is enabled when not playing, or can be used to resume when paused
+    ui->playButton->setEnabled(hasSongs && (!isPlaying || isPaused));
+    ui->pauseButton->setEnabled(isPlaying && !isPaused);
     ui->skipButton->setEnabled(isPlaying);
     ui->stopButton->setEnabled(isPlaying);
     ui->addSongButton->setEnabled(true);
@@ -125,9 +157,18 @@ void MainWindow::updateControls()
 
 void MainWindow::on_playButton_clicked()
 {
+    if (isPaused) {
+        // Resume playback
+        audioPlayer->play();
+        isPaused = false;
+        updateControls();
+        return;
+    }
+    
     if (isPlaying) {
         audioPlayer->stop();
         isPlaying = false;
+        isPaused = false;
         updateControls();
         return;
     }
@@ -141,11 +182,22 @@ void MainWindow::on_playButton_clicked()
     generateAndPlayNext();
 }
 
+void MainWindow::on_pauseButton_clicked()
+{
+    if (isPlaying && !isPaused) {
+        // Pause playback
+        audioPlayer->pause();
+        isPaused = true;
+        updateControls();
+    }
+}
+
 void MainWindow::on_skipButton_clicked()
 {
     if (isPlaying) {
         // Stop current playback and move to next song
         audioPlayer->stop();
+        isPaused = false;
         playNextSong();
     }
 }
@@ -156,8 +208,17 @@ void MainWindow::on_stopButton_clicked()
         // Stop current playback completely
         audioPlayer->stop();
         isPlaying = false;
+        isPaused = false;
         ui->statusLabel->setText("Stopped");
         updateControls();
+    }
+}
+
+void MainWindow::on_positionSlider_sliderMoved(int position)
+{
+    if (isPlaying && audioPlayer->isPlaying()) {
+        // Seek to the new position when slider is moved
+        audioPlayer->setPosition(position);
     }
 }
 
@@ -257,10 +318,6 @@ void MainWindow::on_advancedSettingsButton_clicked()
     jsonTemplateEdit->setPlainText(jsonTemplate);
     jsonTemplateEdit->setMinimumHeight(200);
     jsonLayout->addWidget(jsonTemplateEdit);
-    
-    QLabel *fieldsLabel = new QLabel("Available fields: caption, lyrics, instrumental, bpm, duration, keyscale, timesignature,\nvocal_language, seed, lm_temperature, lm_cfg_scale, lm_top_p, lm_top_k, lm_negative_prompt,\naudio_codes, inference_steps, guidance_scale, shift");
-    fieldsLabel->setWordWrap(true);
-    jsonLayout->addWidget(fieldsLabel);
     
     tabWidget->addTab(jsonTab, "JSON Template");
     
@@ -405,6 +462,10 @@ void MainWindow::songGenerated(const QString &filePath)
     
     // Play the generated song
     audioPlayer->play(filePath);
+    
+    // Connect position and duration updates for the slider
+    connect(audioPlayer, &AudioPlayer::positionChanged, this, &MainWindow::updatePosition);
+    connect(audioPlayer, &AudioPlayer::durationChanged, this, &MainWindow::updateDuration);
 }
 
 void MainWindow::playNextSong()
@@ -420,6 +481,7 @@ void MainWindow::playNextSong()
     } else {
         // No more songs
         isPlaying = false;
+        isPaused = false;
         ui->statusLabel->setText("Finished playback");
         updateControls();
     }
@@ -453,6 +515,7 @@ void MainWindow::generationError(const QString &error)
     dialog.exec();
     
     isPlaying = false;
+    isPaused = false;
     updateControls();
 }
 
