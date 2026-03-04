@@ -10,6 +10,8 @@
 #include <QTextEdit>
 #include <QDialogButtonBox>
 #include <QLabel>
+#include <QFile>
+#include <QDir>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -32,16 +34,22 @@ MainWindow::MainWindow(QWidget *parent)
     // Load settings
     loadSettings();
     
+    // Auto-load playlist from config location on startup
+    autoLoadPlaylist();
+
     // Connect signals and slots
     connect(ui->actionAdvancedSettings, &QAction::triggered, this, &MainWindow::on_advancedSettingsButton_clicked);
+    connect(ui->actionSavePlaylist, &QAction::triggered, this, &MainWindow::on_actionSavePlaylist);
+    connect(ui->actionLoadPlaylist, &QAction::triggered, this, &MainWindow::on_actionLoadPlaylist);
+    connect(ui->actionQuit, &QAction::triggered, this, [this](){close();});
     connect(audioPlayer, &AudioPlayer::playbackFinished, this, &MainWindow::playNextSong);
     connect(audioPlayer, &AudioPlayer::playbackStarted, this, &MainWindow::playbackStarted);
     connect(aceStepWorker, &AceStepWorker::songGenerated, this, &MainWindow::songGenerated);
     connect(aceStepWorker, &AceStepWorker::generationError, this, &MainWindow::generationError);
     connect(aceStepWorker, &AceStepWorker::progressUpdate, ui->progressBar, &QProgressBar::setValue);
     
-    // Connect double-click on song list for editing
-    connect(ui->songListView, &QListView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
+    // Connect double-click on song list for editing (works with QTableView too)
+    connect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
     
     // Connect audio player error signal
     connect(audioPlayer, &AudioPlayer::playbackError, [this](const QString &error) {
@@ -51,6 +59,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    // Auto-save playlist before closing
+    autoSavePlaylist();
+    
     saveSettings();
     delete ui;
 }
@@ -60,8 +71,19 @@ void MainWindow::setupUI()
     // Setup song list view
     ui->songListView->setModel(songModel);
     
-    // Make sure the list view is read-only (no inline editing)
+    // Make sure the table view is read-only (no inline editing)
     ui->songListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    
+    // Hide headers for cleaner appearance
+    ui->songListView->horizontalHeader()->hide();
+    ui->songListView->verticalHeader()->hide();
+    
+    // Configure column sizes
+    ui->songListView->setColumnWidth(0, 40); // Fixed width for play indicator column
+    ui->songListView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch); // Expand caption column
+    
+    // Enable row selection and disable column selection
+    ui->songListView->setSelectionBehavior(QAbstractItemView::SelectRows);
     
     // Add some default songs
     SongItem defaultSong1("Upbeat pop rock anthem with driving electric guitars", "");
@@ -84,8 +106,7 @@ void MainWindow::loadSettings()
     QSettings settings("MusicGenerator", "AceStepGUI");
     
     // Load JSON template (default to simple configuration)
-    jsonTemplate = settings.value("jsonTemplate", 
-        "{\"inference_steps\": 8, \"shift\": 3.0, \"vocal_language\": \"en\"}").toString();
+    jsonTemplate = settings.value("jsonTemplate", "{\n\t\"inference_steps\": 8,\n\t\"shift\": 3.0,\n\t\"vocal_language\": \"en\"\n}").toString();
     
     // Load shuffle mode
     shuffleMode = settings.value("shuffleMode", false).toBool();
@@ -217,7 +238,6 @@ void MainWindow::on_stopButton_clicked()
         audioPlayer->stop();
         isPlaying = false;
         isPaused = false;
-        ui->statusLabel->setText("Stopped");
         updateControls();
     }
 }
@@ -251,24 +271,38 @@ void MainWindow::on_songListView_doubleClicked(const QModelIndex &index)
     
     // Temporarily disconnect the signal to prevent multiple invocations
     // This happens when the dialog closes and triggers another double-click event
-    disconnect(ui->songListView, &QListView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
+    disconnect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
     
     int row = index.row();
-    SongItem song = songModel->getSong(row);
     
-    SongDialog dialog(this, song.caption, song.lyrics);
-    
-    if (dialog.exec() == QDialog::Accepted) {
-        QString caption = dialog.getCaption();
-        QString lyrics = dialog.getLyrics();
+    // Different behavior based on which column was clicked
+    if (index.column() == 0) {
+        // Column 0 (play indicator): Stop current playback and play this song
+        if (isPlaying) {
+            audioPlayer->stop();
+        }
         
-        // Update the model
-        songModel->setData(songModel->index(row, 0), caption, SongListModel::CaptionRole);
-        songModel->setData(songModel->index(row, 0), lyrics, SongListModel::LyricsRole);
+        // Set this as the current song and generate/play it
+        currentSongIndex = row;
+        generateAndPlayNext();
+    } else if (index.column() == 1) {
+        // Column 1 (caption): Edit the song
+        SongItem song = songModel->getSong(row);
+        
+        SongDialog dialog(this, song.caption, song.lyrics);
+        
+        if (dialog.exec() == QDialog::Accepted) {
+            QString caption = dialog.getCaption();
+            QString lyrics = dialog.getLyrics();
+            
+            // Update the model - use column 1 for the song name
+            songModel->setData(songModel->index(row, 1), caption, SongListModel::CaptionRole);
+            songModel->setData(songModel->index(row, 1), lyrics, SongListModel::LyricsRole);
+        }
     }
     
     // Reconnect the signal after dialog is closed
-    connect(ui->songListView, &QListView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
+    connect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
 }
 
 void MainWindow::on_removeSongButton_clicked()
@@ -276,21 +310,16 @@ void MainWindow::on_removeSongButton_clicked()
     QModelIndex currentIndex = ui->songListView->currentIndex();
     if (!currentIndex.isValid()) return;
     
+    // Get the row from the current selection (works with table view)
     int row = currentIndex.row();
     
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Remove Song", "Are you sure you want to remove this song?",
-                                  QMessageBox::Yes | QMessageBox::No);
-    
-    if (reply == QMessageBox::Yes) {
-        songModel->removeSong(row);
-        
-        // Select next item or previous if at end
-        int newRow = qMin(row, songModel->rowCount() - 1);
-        if (newRow >= 0) {
-            QModelIndex newIndex = songModel->index(newRow, 0);
-            ui->songListView->setCurrentIndex(newIndex);
-        }
+    songModel->removeSong(row);
+
+    // Select next item or previous if at end
+    int newRow = qMin(row, songModel->rowCount() - 1);
+    if (newRow >= 0) {
+        QModelIndex newIndex = songModel->index(newRow, 0);
+        ui->songListView->setCurrentIndex(newIndex);
     }
 }
 
@@ -375,6 +404,14 @@ void MainWindow::playbackStarted()
     startNextSongGeneration();
 }
 
+void MainWindow::highlightCurrentSong()
+{
+    if (currentSongIndex >= 0 && currentSongIndex < songModel->rowCount()) {
+        // Update the model to show play icon for current song
+        songModel->setPlayingIndex(currentSongIndex);
+    }
+}
+
 void MainWindow::songGenerated(const QString &filePath)
 {
     if (!QFile::exists(filePath)) {
@@ -389,10 +426,13 @@ void MainWindow::songGenerated(const QString &filePath)
         return;
     }
     
-    ui->statusLabel->setText("Playing: " + QFileInfo(filePath).baseName());
+    ui->statusLabel->setText("");
     
     // Play the generated song
     audioPlayer->play(filePath);
+    
+    // Highlight the current song in the list
+    highlightCurrentSong();
     
     // Connect position and duration updates for the slider
     connect(audioPlayer, &AudioPlayer::positionChanged, this, &MainWindow::updatePosition);
@@ -405,7 +445,6 @@ void MainWindow::playNextSong()
     
     // Check if we have a pre-generated next song
     if (!nextSongFilePath.isEmpty()) {
-        ui->statusLabel->setText("Playing: " + QFileInfo(nextSongFilePath).baseName());
         audioPlayer->play(nextSongFilePath);
         nextSongFilePath.clear();
         
@@ -415,7 +454,8 @@ void MainWindow::playNextSong()
             currentSongIndex = nextIndex;
         }
         
-        // Start generating the song after this one
+        // Highlight the current song and start generating the next one
+        highlightCurrentSong();
         startNextSongGeneration();
     } else {
         // Find next song index and generate it
@@ -428,7 +468,6 @@ void MainWindow::playNextSong()
             // No more songs
             isPlaying = false;
             isPaused = false;
-            ui->statusLabel->setText("Finished playback");
             updateControls();
         }
     }
@@ -487,4 +526,190 @@ void MainWindow::on_positionSlider_sliderMoved(int position)
         // Seek to the new position when slider is moved
         audioPlayer->setPosition(position);
     }
+}
+
+// Playlist save/load methods
+void MainWindow::on_actionSavePlaylist()
+{
+    QString filePath = QFileDialog::getSaveFileName(this, "Save Playlist", 
+                                                     QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/playlist.json",
+                                                     "JSON Files (*.json);;All Files (*)");
+    
+    if (!filePath.isEmpty()) {
+        savePlaylist(filePath);
+    }
+}
+
+void MainWindow::on_actionLoadPlaylist()
+{
+    QString filePath = QFileDialog::getOpenFileName(this, "Load Playlist",
+                                                     QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                                                     "JSON Files (*.json);;All Files (*)");
+    
+    if (!filePath.isEmpty()) {
+        loadPlaylist();
+    }
+}
+
+void MainWindow::savePlaylist(const QString &filePath)
+{
+    // Get current songs from the model
+    QList<SongItem> songs;
+    for (int i = 0; i < songModel->rowCount(); ++i) {
+        songs.append(songModel->getSong(i));
+    }
+    
+    savePlaylistToJson(filePath, songs);
+}
+
+void MainWindow::loadPlaylist()
+{
+    QString filePath = QFileDialog::getOpenFileName(this, "Load Playlist",
+                                                     QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                                                     "JSON Files (*.json);;All Files (*)");
+    
+    if (!filePath.isEmpty()) {
+        QList<SongItem> songs;
+        if (loadPlaylistFromJson(filePath, songs)) {
+            // Clear current playlist
+            while (songModel->rowCount() > 0) {
+                songModel->removeSong(0);
+            }
+            
+            // Add loaded songs
+            for (const SongItem &song : songs) {
+                songModel->addSong(song);
+            }
+        }
+    }
+}
+
+void MainWindow::autoSavePlaylist()
+{
+    QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QString appConfigPath = configPath + "/MusicGenerator/AceStepGUI";
+    
+    // Create directory if it doesn't exist
+    QDir().mkpath(appConfigPath);
+    
+    QString filePath = appConfigPath + "/playlist.json";
+    
+    // Get current songs from the model
+    QList<SongItem> songs;
+    for (int i = 0; i < songModel->rowCount(); ++i) {
+        songs.append(songModel->getSong(i));
+    }
+    
+    savePlaylistToJson(filePath, songs);
+}
+
+void MainWindow::autoLoadPlaylist()
+{
+    QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QString appConfigPath = configPath + "/MusicGenerator/AceStepGUI";
+    QString filePath = appConfigPath + "/playlist.json";
+    
+    // Check if the auto-save file exists
+    if (QFile::exists(filePath)) {
+        QList<SongItem> songs;
+        if (loadPlaylistFromJson(filePath, songs)) {
+            // Clear default songs and add loaded ones
+            while (songModel->rowCount() > 0) {
+                songModel->removeSong(0);
+            }
+            
+            for (const SongItem &song : songs) {
+                songModel->addSong(song);
+            }
+        }
+    }
+}
+
+bool MainWindow::savePlaylistToJson(const QString &filePath, const QList<SongItem> &songs)
+{
+    QJsonArray songsArray;
+    
+    for (const SongItem &song : songs) {
+        QJsonObject songObj;
+        songObj["caption"] = song.caption;
+        songObj["lyrics"] = song.lyrics;
+        songsArray.append(songObj);
+    }
+    
+    QJsonObject rootObj;
+    rootObj["songs"] = songsArray;
+    rootObj["version"] = "1.0";
+    
+    QJsonDocument doc(rootObj);
+    QByteArray jsonData = doc.toJson();
+    
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "Could not open file for writing:" << filePath;
+        return false;
+    }
+    
+    file.write(jsonData);
+    file.close();
+    
+    return true;
+}
+
+bool MainWindow::loadPlaylistFromJson(const QString &filePath, QList<SongItem> &songs)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Could not open file for reading:" << filePath;
+        return false;
+    }
+    
+    QByteArray jsonData = file.readAll();
+    file.close();
+    
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
+    
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parse error:" << parseError.errorString();
+        return false;
+    }
+    
+    if (!doc.isObject()) {
+        qWarning() << "JSON root is not an object";
+        return false;
+    }
+    
+    QJsonObject rootObj = doc.object();
+    
+    // Check for version compatibility
+    if (rootObj.contains("version") && rootObj["version"].toString() != "1.0") {
+        qWarning() << "Unsupported playlist version:" << rootObj["version"].toString();
+        return false;
+    }
+    
+    if (!rootObj.contains("songs") || !rootObj["songs"].isArray()) {
+        qWarning() << "Invalid playlist format: missing songs array";
+        return false;
+    }
+    
+    QJsonArray songsArray = rootObj["songs"].toArray();
+    
+    for (const QJsonValue &value : songsArray) {
+        if (!value.isObject()) continue;
+        
+        QJsonObject songObj = value.toObject();
+        SongItem song;
+        
+        if (songObj.contains("caption")) {
+            song.caption = songObj["caption"].toString();
+        }
+        
+        if (songObj.contains("lyrics")) {
+            song.lyrics = songObj["lyrics"].toString();
+        }
+        
+        songs.append(song);
+    }
+    
+    return true;
 }

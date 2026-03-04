@@ -5,6 +5,10 @@
 #include <QListWidgetItem>
 #include <QStandardItemModel>
 #include <QTimer>
+#include <QStandardPaths>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
 #include "SongListModel.h"
 #include "AudioPlayer.h"
 #include "AceStepWorker.h"
@@ -43,6 +47,9 @@ private slots:
     void generationFinished();
     void generationError(const QString &error);
     
+    void on_actionSavePlaylist();
+    void on_actionLoadPlaylist();
+    
 private:
     void startNextSongGeneration();
     
@@ -72,8 +79,19 @@ private:
     // Pre-generated song file path
     QString nextSongFilePath;
     
+private:
+    void highlightCurrentSong();
+    
     void loadSettings();
     void saveSettings();
+    void loadPlaylist();
+    void savePlaylist(const QString &filePath);
+    void autoSavePlaylist();
+    void autoLoadPlaylist();
+    
+    bool savePlaylistToJson(const QString &filePath, const QList<SongItem> &songs);
+    bool loadPlaylistFromJson(const QString &filePath, QList<SongItem> &songs);
+    
     void setupUI();
     void updateControls();
     void generateAndPlayNext();

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Music Generator GUI</string>
+   <string>Aceradio</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -21,13 +21,12 @@
        <string>Music Generator</string>
       </property>
       <property name="alignment">
-       <set>Qt::AlignCenter</set>
+       <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
-
      </widget>
     </item>
     <item>
-     <widget class="QListView" name="songListView">
+     <widget class="QTableView" name="songListView">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -35,7 +34,10 @@
        </size>
       </property>
       <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
+       <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
       </property>
      </widget>
     </item>
@@ -58,7 +60,7 @@
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -81,8 +83,14 @@
       </item>
       <item>
        <widget class="QSlider" name="positionSlider">
+        <property name="mouseTracking">
+         <bool>false</bool>
+        </property>
+        <property name="tabletTracking">
+         <bool>true</bool>
+        </property>
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
        </widget>
       </item>
@@ -98,10 +106,10 @@
     <item>
      <widget class="QFrame" name="controlsFrame">
       <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
+       <enum>QFrame::Shape::StyledPanel</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+       <enum>QFrame::Shadow::Raised</enum>
       </property>
       <layout class="QHBoxLayout" name="controlsLayout">
        <item>
@@ -110,9 +118,7 @@
           <string>Play</string>
          </property>
          <property name="icon">
-          <iconset theme="media-playback-start">
-           <normaloff>.</normaloff>.
-          </iconset>
+          <iconset theme="media-playback-start"/>
          </property>
         </widget>
        </item>
@@ -122,9 +128,7 @@
           <string>Pause</string>
          </property>
          <property name="icon">
-          <iconset theme="media-playback-pause">
-           <normaloff>.</normaloff>.
-          </iconset>
+          <iconset theme="media-playback-pause"/>
          </property>
         </widget>
        </item>
@@ -134,9 +138,7 @@
           <string>Skip</string>
          </property>
          <property name="icon">
-          <iconset theme="media-skip-forward">
-           <normaloff>.</normaloff>.
-          </iconset>
+          <iconset theme="media-skip-forward"/>
          </property>
         </widget>
        </item>
@@ -146,9 +148,7 @@
           <string>Stop</string>
          </property>
          <property name="icon">
-          <iconset theme="media-playback-stop">
-           <normaloff>.</normaloff>.
-          </iconset>
+          <iconset theme="media-playback-stop"/>
          </property>
         </widget>
        </item>
@@ -157,20 +157,18 @@
          <property name="text">
           <string>Shuffle</string>
          </property>
+         <property name="icon">
+          <iconset theme="media-playlist-shuffle"/>
+         </property>
          <property name="checkable">
           <bool>true</bool>
-         </property>
-         <property name="icon">
-          <iconset theme="media-playlist-shuffle">
-           <normaloff>.</normaloff>.
-          </iconset>
          </property>
         </widget>
        </item>
        <item>
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -195,7 +193,7 @@
       <item>
        <widget class="QLabel" name="statusLabel">
         <property name="text">
-         <string>Ready</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -209,21 +207,63 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>32</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionSavePlaylist"/>
+    <addaction name="actionLoadPlaylist"/>
+    <addaction name="actionQuit"/>
+   </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
      <string>Settings</string>
     </property>
     <addaction name="actionAdvancedSettings"/>
    </widget>
+   <addaction name="menuFile"/>
    <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionSavePlaylist">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentSaveAs"/>
+   </property>
+   <property name="text">
+    <string>Save Playlist</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionLoadPlaylist">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+   </property>
+   <property name="text">
+    <string>Load Playlist...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
   <action name="actionAdvancedSettings">
    <property name="text">
-    <string>Advanced Settings...</string>
+    <string>Ace Step</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::ApplicationExit"/>
+   </property>
+   <property name="text">
+    <string>Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
  </widget>
