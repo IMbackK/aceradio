@@ -11,6 +11,7 @@
 #include <QLabel>
 #include <QTabWidget>
 #include <QLineEdit>
+#include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -116,6 +117,7 @@ void MainWindow::updateControls()
     
     ui->playButton->setEnabled(hasSongs && !isPlaying);
     ui->skipButton->setEnabled(isPlaying);
+    ui->stopButton->setEnabled(isPlaying);
     ui->addSongButton->setEnabled(true);
     ui->editSongButton->setEnabled(hasSongs && ui->songListView->currentIndex().isValid());
     ui->removeSongButton->setEnabled(hasSongs && ui->songListView->currentIndex().isValid());
@@ -145,6 +147,17 @@ void MainWindow::on_skipButton_clicked()
         // Stop current playback and move to next song
         audioPlayer->stop();
         playNextSong();
+    }
+}
+
+void MainWindow::on_stopButton_clicked()
+{
+    if (isPlaying) {
+        // Stop current playback completely
+        audioPlayer->stop();
+        isPlaying = false;
+        ui->statusLabel->setText("Stopped");
+        updateControls();
     }
 }
 
@@ -414,9 +427,32 @@ void MainWindow::playNextSong()
 
 void MainWindow::generationError(const QString &error)
 {
-    QMessageBox::critical(this, "Generation Error", "Failed to generate song: " + error);
+    // Show detailed error in a dialog with QTextEdit
+    QDialog dialog(this);
+    dialog.setWindowTitle("Generation Error");
+    dialog.resize(600, 400);
+    
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    
+    QLabel *errorLabel = new QLabel("Error occurred during music generation:");
+    errorLabel->setStyleSheet("font-weight: bold; color: darkred;");
+    layout->addWidget(errorLabel);
+    
+    QTextEdit *errorTextEdit = new QTextEdit();
+    errorTextEdit->setReadOnly(true);
+    errorTextEdit->setPlainText(error);
+    errorTextEdit->setLineWrapMode(QTextEdit::NoWrap);
+    errorTextEdit->setFontFamily("Monospace");
+    layout->addWidget(errorTextEdit);
+    
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
+    layout->addWidget(buttonBox);
+    
+    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    
+    dialog.exec();
+    
     isPlaying = false;
-    ui->statusLabel->setText("Error: " + error);
     updateControls();
 }
 

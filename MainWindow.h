@@ -24,6 +24,7 @@ public:
 private slots:
     void on_playButton_clicked();
     void on_skipButton_clicked();
+    void on_stopButton_clicked();
     void on_shuffleButton_clicked();
     void on_addSongButton_clicked();
     void on_editSongButton_clicked();

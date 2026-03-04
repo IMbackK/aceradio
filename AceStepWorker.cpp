@@ -7,6 +7,8 @@
 #include <QStandardPaths>
 #include <QDebug>
 #include <QCoreApplication>
+#include <QRandomGenerator>
+#include <cstdint>
 
 AceStepWorker::AceStepWorker(QObject *parent)
     : QObject(parent),
@@ -48,10 +50,10 @@ void AceStepWorker::workerFinished()
 // Worker implementation
 void AceStepWorker::Worker::run()
 {
-    
+    uint64_t uid = QRandomGenerator::global()->generate();
     // Create temporary JSON file for the request
     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    QString requestFile = tempDir + "/request_" + QString::number(QCoreApplication::applicationPid()) + ".json";
+    QString requestFile = tempDir + "/request_" + QString::number(uid) + ".json";
     
     // Parse and modify the template
     QJsonParseError parseError;
@@ -139,10 +141,10 @@ void AceStepWorker::Worker::run()
         return;
     }
     
-    if (!qwen3Process.waitForFinished(30000)) { // 30 second timeout
+    if (!qwen3Process.waitForFinished(60000)) { // 60 second timeout
         qwen3Process.terminate();
         qwen3Process.waitForFinished(5000);
-        emit parent->generationError("ace-qwen3 timed out after 30 seconds");
+        emit parent->generationError("ace-qwen3 timed out after 60 seconds");
         return;
     }
     
@@ -152,13 +154,19 @@ void AceStepWorker::Worker::run()
         emit parent->generationError("ace-qwen3 exited with code " + QString::number(exitCode) + ": " + errorOutput);
         return;
     }
+
+    QString requestLmOutputFile = tempDir + "/request_" + QString::number(uid) + "0.json";
+    if (!QFileInfo::exists(requestLmOutputFile)) {
+        emit parent->generationError("ace-qwen3 failed to create enhaced request file "+requestLmOutputFile);
+        return;
+    }
     
     emit parent->progressUpdate(50);
     
     // Step 2: Run dit-vae to generate audio
     QProcess ditVaeProcess;
     QStringList ditVaeArgs;
-    ditVaeArgs << "--request" << requestFile;
+    ditVaeArgs << "--request" << requestLmOutputFile;
     ditVaeArgs << "--text-encoder" << textEncoderModel;
     ditVaeArgs << "--dit" << ditModel;
     ditVaeArgs << "--vae" << vaeModel;
@@ -188,17 +196,14 @@ void AceStepWorker::Worker::run()
     emit parent->progressUpdate(90);
     
     // Find the generated WAV file
-    QDir requestDir(QFileInfo(requestFile).absolutePath());
-    QStringList wavFiles = requestDir.entryList(QStringList("request*.wav"), QDir::Files, QDir::Name);
-    
-    if (wavFiles.isEmpty()) {
-        emit parent->generationError("No WAV file generated");
+    QString wavFile = QFileInfo(requestFile).absolutePath()+"/request_" + QString::number(uid) + "00.wav";
+    if (!QFileInfo::exists(wavFile)) {
+        emit parent->generationError("No WAV file generated at "+wavFile);
         return;
     }
     
-    QString wavFile = requestDir.absoluteFilePath(wavFiles.first());
-    
     // Clean up temporary files
+    QFile::remove(requestLmOutputFile);
     QFile::remove(requestFile);
     
     emit parent->progressUpdate(100);

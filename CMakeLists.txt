@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(MusicGeneratorGUI LANGUAGES CXX)
+project(aceradio LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,14 +7,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find Qt packages
 find_package(Qt6 COMPONENTS Core Gui Widgets Multimedia REQUIRED)
 
-# Include acestep.cpp as a subdirectory
-#add_subdirectory(acestep.cpp)
+# Note: acestep.cpp binaries and models should be provided at runtime
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
 # Add executable
-add_executable(MusicGeneratorGUI
+add_executable(${PROJECT_NAME}
     main.cpp
     MainWindow.ui
     MainWindow.cpp
@@ -25,25 +24,19 @@ add_executable(MusicGeneratorGUI
 )
 
 # UI file
-target_include_directories(MusicGeneratorGUI PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Link libraries
-target_link_libraries(MusicGeneratorGUI PRIVATE
+# Link libraries (only Qt libraries - acestep.cpp is external)
+target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
     Qt6::Multimedia
-    acestep-core
 )
 
-# Include directories
-target_include_directories(MusicGeneratorGUI PRIVATE
+# Include directories (only our source directory - acestep.cpp is external)
+target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/acestep.cpp/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/acestep.cpp/ggml/include
 )
 
-# Copy models directory if it exists
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/acestep.cpp/models")
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/acestep.cpp/models" DESTINATION "${CMAKE_BINARY_DIR}")
-endif()
+# Note: acestep.cpp binaries (ace-qwen3, dit-vae) and models should be provided at runtime
