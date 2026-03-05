@@ -14,23 +14,25 @@ set(CMAKE_AUTOUIC ON)
 
 # Add executable
 add_executable(${PROJECT_NAME}
-    main.cpp
-    MainWindow.ui
-    MainWindow.cpp
-    MainWindow.h
-    AdvancedSettingsDialog.ui
-    AdvancedSettingsDialog.cpp
-    AdvancedSettingsDialog.h
-    SongDialog.ui
-    SongDialog.cpp
-    SongDialog.h
-    SongListModel.cpp
-    SongListModel.h
-    AudioPlayer.cpp
-    AudioPlayer.h
-    AceStepWorker.cpp
-    AceStepWorker.h
-    SongItem.h
+    src/main.cpp
+    src/MainWindow.ui
+    src/MainWindow.cpp
+    src/MainWindow.h
+    src/AdvancedSettingsDialog.ui
+    src/AdvancedSettingsDialog.cpp
+    src/AdvancedSettingsDialog.h
+    src/SongDialog.ui
+    src/SongDialog.cpp
+    src/SongDialog.h
+    src/SongListModel.cpp
+    src/SongListModel.h
+    src/AudioPlayer.cpp
+    src/AudioPlayer.h
+    src/AceStepWorker.cpp
+    src/AceStepWorker.h
+    src/SongItem.h
+    src/clickableslider.h
+    src/clickableslider.cpp
     ${MusicGeneratorGUI_H}
 )
 

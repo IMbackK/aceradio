@@ -38,6 +38,7 @@ public:
     void removeSong(int index);
     SongItem getSong(int index) const;
     int findNextIndex(int currentIndex, bool shuffle = false) const;
+    void clear();
     
     // Playing indicator
     void setPlayingIndex(int index);
@@ -45,7 +46,8 @@ public:
     
     // Find song by unique ID
     int findSongIndexById(uint64_t uniqueId) const;
-		int songCount();
+    int songCount();
+    bool empty();
     
 private:
     QList<SongItem> songList;

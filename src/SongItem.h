@@ -7,9 +7,10 @@ class SongItem {
 public:
     QString caption;
     QString lyrics;
-    uint64_t uniqueId; // Unique identifier for tracking across playlist changes
+    uint64_t uniqueId;
     QString file;
-    QString vocalLanguage; // Language override for vocal generation (ISO 639 code or empty)
+    QString vocalLanguage;
+    QString json;
 
     inline SongItem(const QString &caption = "", const QString &lyrics = "")
         : caption(caption), lyrics(lyrics) {

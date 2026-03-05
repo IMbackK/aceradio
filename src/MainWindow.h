@@ -51,6 +51,8 @@ private slots:
     
     void on_actionSavePlaylist();
     void on_actionLoadPlaylist();
+    void on_actionAppendPlaylist();
+    void on_actionSaveSong();
     
 private:
     void startNextSongGeneration();
@@ -85,7 +87,7 @@ private:
 private:
     void loadSettings();
     void saveSettings();
-    void loadPlaylist();
+    void loadPlaylist(const QString &filePath);
     void savePlaylist(const QString &filePath);
     void autoSavePlaylist();
     void autoLoadPlaylist();

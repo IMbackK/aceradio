@@ -43,6 +43,20 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="infoTab">
+       <attribute name="title">
+        <string>Info</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPlainTextEdit" name="jsonTextEdit">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="lyricsTab">
        <attribute name="title">
         <string>Lyrics</string>
@@ -118,15 +132,12 @@
        </widget>
       </item>
       <item>
-       <widget class="QSlider" name="positionSlider">
+       <widget class="ClickableSlider" name="positionSlider" native="true">
         <property name="mouseTracking">
          <bool>false</bool>
         </property>
         <property name="tabletTracking">
-         <bool>true</bool>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -250,8 +261,11 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionSaveSong"/>
     <addaction name="actionSavePlaylist"/>
     <addaction name="actionLoadPlaylist"/>
+    <addaction name="actionAppendPlaylist"/>
+    <addaction name="actionClearPlaylist"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
@@ -302,7 +316,38 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
+  <action name="actionClearPlaylist">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::EditDelete"/>
+   </property>
+   <property name="text">
+    <string>Clear Playlist</string>
+   </property>
+  </action>
+  <action name="actionSaveSong">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentSaveAs"/>
+   </property>
+   <property name="text">
+    <string>Save Song</string>
+   </property>
+  </action>
+  <action name="actionAppendPlaylist">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+   </property>
+   <property name="text">
+    <string>Append Playlist</string>
+   </property>
+  </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ClickableSlider</class>
+   <extends>QWidget</extends>
+   <header>clickableslider.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

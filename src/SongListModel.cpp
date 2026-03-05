@@ -126,6 +126,18 @@ void SongListModel::removeSong(int index)
     }
 }
 
+void SongListModel::clear()
+{
+    beginRemoveRows(QModelIndex(), 0, songList.size()-1);
+    songList.clear();
+    endRemoveRows();
+}
+
+bool SongListModel::empty()
+{
+    return songList.empty();
+}
+
 SongItem SongListModel::getSong(int index) const
 {
     if (index >= 0 && index < songList.size()) {

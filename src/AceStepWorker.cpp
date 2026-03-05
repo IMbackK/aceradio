@@ -180,7 +180,8 @@ void AceStepWorker::Worker::run()
     QFile lmOutputFile(requestLmOutputFile);
     if (lmOutputFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QJsonParseError parseError;
-        QJsonDocument doc = QJsonDocument::fromJson(lmOutputFile.readAll(), &parseError);
+        song.json = lmOutputFile.readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(song.json.toUtf8(), &parseError);
         lmOutputFile.close();
         
         if (doc.isObject() && !parseError.error) {
