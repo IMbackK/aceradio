@@ -99,9 +99,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-	// Auto-save playlist before closing
-	autoSavePlaylist();
+	aceStep->cancleGenerateion();
 
+	autoSavePlaylist();
 	saveSettings();
 	delete ui;
 }
