@@ -2,7 +2,7 @@
 
 ![Screenshot](res/scrot.png)
 
-A C++ Qt graphical user interface for generating music using acestep.cpp.
+A C++ Qt graphical user interface for generating music using [acestep.cpp](https://github.com/ServeurpersoCom/acestep.cpp).
 
 ## Requirements
 
@@ -26,7 +26,7 @@ make -j$(nproc)
 ### Build the GUI:
 
 ```bash
-git clone git@github.com:IMbackK/aceradio.git
+git clone https://github.com/IMbackK/aceradio.git
 cd aceradio
 mkdir build && cd build
 cmake ..
