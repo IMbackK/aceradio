@@ -20,23 +20,23 @@ jobs:
       - name: Version
         id: version
         run: |
-            cd ${{ gitea.workspace }}
+            cd ${{ github.workspace }}
             git fetch -a;
             echo "tag=$(git describe --tags `git rev-list --tags --max-count=1`)" >> $GITHUB_OUTPUT
       - name: Build
         run: |
-            mkdir ${{ gitea.workspace }}/build; cd ${{ gitea.workspace }}/build
+            mkdir ${{ github.workspace }}/build; cd ${{ github.workspace }}/build
             cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./install/usr -DGIT_TAG=${{ steps.version.outputs.tag }} ..
             make -j $(nproc)
             make install
       - name: Create Appimage
         run: |
-            cd ${{ gitea.workspace }}/build/
+            cd ${{ github.workspace }}/build/
             appimagetool --appimage-extract-and-run -s deploy install/usr/share/applications/xyz.uvos.aceradio.desktop
             appimagetool --appimage-extract-and-run -s install
       - name: Upload Appimage
         uses: actions/upload-artifact@v6
         with:
             name: aceradio-appimage
-            path: ${{ gitea.workspace }}/build/*.AppImage
+            path: ${{ github.workspace }}/build/*.AppImage
 
