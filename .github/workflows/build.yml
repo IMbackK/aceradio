@@ -30,8 +30,8 @@ jobs:
       - name: Create Appimage
         run: |
             cd ${{ github.workspace }}/build/
-            install -d install/usr/lib/x86_64-linux-gnu/qt6/plugins/
-            cp -vr /lib/x86_64-linux-gnu/qt6/plugins/multimedia install/usr/lib/x86_64-linux-gnu/qt6/plugins/
+            install -d install/usr/lib/x86_64-linux-gnu/qt6/plugins/multimedia
+            cp -vr /lib/x86_64-linux-gnu/qt6/plugins/multimedia/libffmpegmediaplugin.so install/usr/lib/x86_64-linux-gnu/qt6/plugins/multimedia/
             appimagetool --appimage-extract-and-run -s deploy install/usr/share/applications/xyz.uvos.aceradio.desktop
             appimagetool --appimage-extract-and-run -s install
       - name: Upload Appimage
