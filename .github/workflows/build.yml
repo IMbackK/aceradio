@@ -14,7 +14,7 @@ jobs:
         run: |
             wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
             chmod +x appimagetool-*-x86_64.AppImage
-            mv appimagetool-*-x86_64.AppImage /usr/bin/appimagetool
+            sudo mv appimagetool-*-x86_64.AppImage /usr/bin/appimagetool
       - name: Version
         id: version
         run: |
