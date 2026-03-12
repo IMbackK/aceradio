@@ -9,9 +9,7 @@ jobs:
       - name: Install dependancies
         run: sudo apt update; sudo apt install -y libusb-1.0-0-dev cmake qt6-base-dev qt6-base-dev-tools qt6-tools-dev-tools libqt6widgets6 libqt6multimedia6 wget libglx-dev libgl1-mesa-dev qt6-qpa-plugins
       - name: Check out repository code
-        uses: ischanx/checkout@8c80eac3058d03dc5301629e8f7d59ae255d6cc3
-      - name: Checkout libeismultiplexer
-        run: git clone http://192.168.178.27/git/Eismultiplexer/libeismultiplexer.git
+        uses: actions/checkout@v6
       - name: Install Appimagetool
         run: |
             wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
