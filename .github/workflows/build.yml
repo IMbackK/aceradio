@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install dependancies
-        run: sudo apt update; sudo apt install -y libusb-1.0-0-dev cmake qt6-base-dev qt6-base-dev-tools qt6-tools-dev-tools libqt6widgets6 libqt6multimedia6 wget libglx-dev libgl1-mesa-dev qt6-qpa-plugins
+        run: sudo apt update; sudo apt install -y libusb-1.0-0-dev cmake qt6-base-dev qt6-base-dev-tools qt6-tools-dev-tools libqt6widgets6 libqt6multimedia6 qt6-multimedia-dev wget libglx-dev libgl1-mesa-dev qt6-qpa-plugins
       - name: Check out repository code
         uses: actions/checkout@v6
       - name: Install Appimagetool
