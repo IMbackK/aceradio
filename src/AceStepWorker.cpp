@@ -15,14 +15,14 @@ AceStep::AceStep(QObject* parent): QObject(parent)
 	connect(&ditVaeProcess, &QProcess::finished, this, &AceStep::ditProcFinished);
 }
 
-bool AceStep::isGenerateing(SongItem* song)
+bool AceStep::isGenerating(SongItem* song)
 {
 	if(!busy && song)
 		*song = this->request.song;
 	return busy;
 }
 
-void AceStep::cancleGenerateion()
+void AceStep::cancelGeneration()
 {
 	qwenProcess.blockSignals(true);
 	qwenProcess.terminate();
@@ -36,7 +36,7 @@ void AceStep::cancleGenerateion()
 
 	progressUpdate(100);
 	if(busy)
-		generationCancled(request.song);
+		generationCanceled(request.song);
 
 	busy = false;
 }
@@ -47,7 +47,7 @@ bool AceStep::requestGeneration(SongItem song, QString requestTemplate, QString 
 {
 	if(busy)
 	{
-		qWarning()<<"Droping song:"<<song.caption;
+		qWarning()<<"Dropping song:"<<song.caption;
 		return false;
 	}
 	busy = true;
@@ -133,7 +133,7 @@ void AceStep::qwenProcFinished(int code, QProcess::ExitStatus status)
 	if(code != 0)
 	{
 		QString errorOutput = qwenProcess.readAllStandardError();
-		generationError("dit-vae exited with code " + QString::number(code) + ": " + errorOutput);
+		generationError("ace-qwen3 exited with code " + QString::number(code) + ": " + errorOutput);
 		busy = false;
 		return;
 	}
@@ -150,7 +150,7 @@ void AceStep::qwenProcFinished(int code, QProcess::ExitStatus status)
 	request.requestLlmFilePath = tempDir + "/request_" + QString::number(request.uid) + "0.json";
 	if (!QFileInfo::exists(request.requestLlmFilePath))
 	{
-		generationError("ace-qwen3 failed to create enhaced request file "+request.requestLlmFilePath);
+		generationError("ace-qwen3 failed to create enhanced request file "+request.requestLlmFilePath);
 		busy = false;
 		return;
 	}

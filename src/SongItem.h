@@ -16,7 +16,7 @@ public:
 	inline SongItem(const QString &caption = "", const QString &lyrics = "")
 		: caption(caption), lyrics(lyrics)
 	{
-		// Generate a unique ID using cryptographically secure random number
+		// Generate a unique ID using a cryptographically secure random number
 		uniqueId = QRandomGenerator::global()->generate64();
 	}
 };
