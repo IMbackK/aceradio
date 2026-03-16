@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(audioPlayer, &AudioPlayer::positionChanged, this, &MainWindow::updatePosition);
 	connect(audioPlayer, &AudioPlayer::durationChanged, this, &MainWindow::updateDuration);
 	connect(aceStep, &AceStep::songGenerated, this, &MainWindow::songGenerated);
-	connect(aceStep, &AceStep::generationCancled, this, &MainWindow::generationCanceld);
+	connect(aceStep, &AceStep::generationCanceled, this, &MainWindow::generationCanceld);
 	connect(aceStep, &AceStep::generationError, this, &MainWindow::generationError);
 	connect(aceStep, &AceStep::progressUpdate, ui->progressBar, &QProgressBar::setValue);
 
@@ -102,7 +102,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-	aceStep->cancleGenerateion();
+	aceStep->cancelGeneration();
 
 	autoSavePlaylist();
 	saveSettings();
@@ -523,7 +523,7 @@ void MainWindow::ensureSongsInQueue(bool enqeueCurrent)
 
 	SongItem lastSong;
 	SongItem workerSong;
-	if(aceStep->isGenerateing(&workerSong))
+	if(aceStep->isGenerating(&workerSong))
 		lastSong = workerSong;
 	else if(!generatedSongQueue.empty())
 		lastSong = generatedSongQueue.last();
@@ -553,7 +553,7 @@ void MainWindow::ensureSongsInQueue(bool enqeueCurrent)
 void MainWindow::flushGenerationQueue()
 {
 	generatedSongQueue.clear();
-	aceStep->cancleGenerateion();
+	aceStep->cancelGeneration();
 	isGeneratingNext = false;
 }
 

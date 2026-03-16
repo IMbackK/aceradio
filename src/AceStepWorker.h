@@ -39,7 +39,7 @@ class AceStep : public QObject
 
 signals:
 	void songGenerated(SongItem song);
-	void generationCancled(SongItem song);
+	void generationCanceled(SongItem song);
 	void generationError(QString error);
 	void progressUpdate(int progress);
 
@@ -50,8 +50,8 @@ public slots:
 
 public:
 	AceStep(QObject* parent = nullptr);
-	bool isGenerateing(SongItem* song = nullptr);
-	void cancleGenerateion();
+	bool isGenerating(SongItem* song = nullptr);
+	void cancelGeneration();
 
 private slots:
 	void qwenProcFinished(int code, QProcess::ExitStatus status);
