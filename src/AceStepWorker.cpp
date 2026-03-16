@@ -178,6 +178,7 @@ void AceStep::qwenProcFinished(int code, QProcess::ExitStatus status)
 	ditVaeArgs << "--text-encoder"<<request.textEncoderModelPath;
 	ditVaeArgs << "--dit"<<request.ditModelPath;
 	ditVaeArgs << "--vae"<<request.vaeModelPath;
+	ditVaeArgs << "--wav";
 
 	progressUpdate(60);
 
