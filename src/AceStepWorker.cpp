@@ -54,11 +54,11 @@ bool AceStep::requestGeneration(SongItem song, QString requestTemplate, QString 
 
 	request = {song, QRandomGenerator::global()->generate(), aceStepPath, textEncoderModelPath, ditModelPath, vaeModelPath};
 
-	QString qwen3Binary = aceStepPath + "/ace-qwen3";
+	QString qwen3Binary = aceStepPath + "/ace-lm";
 	QFileInfo qwen3Info(qwen3Binary);
 	if (!qwen3Info.exists() || !qwen3Info.isExecutable())
 	{
-		generationError("ace-qwen3 binary not found at: " + qwen3Binary);
+		generationError("ace-lm binary not found at: " + qwen3Binary);
 		busy = false;
 		return false;
 	}
@@ -133,16 +133,16 @@ void AceStep::qwenProcFinished(int code, QProcess::ExitStatus status)
 	if(code != 0)
 	{
 		QString errorOutput = qwenProcess.readAllStandardError();
-		generationError("ace-qwen3 exited with code " + QString::number(code) + ": " + errorOutput);
+		generationError("ace-lm exited with code " + QString::number(code) + ": " + errorOutput);
 		busy = false;
 		return;
 	}
 
-	QString ditVaeBinary = request.aceStepPath + "/dit-vae";
+	QString ditVaeBinary = request.aceStepPath + "/ace-synth";
 	QFileInfo ditVaeInfo(ditVaeBinary);
 	if (!ditVaeInfo.exists() || !ditVaeInfo.isExecutable())
 	{
-		generationError("dit-vae binary not found at: " + ditVaeBinary);
+		generationError("ace-synth binary not found at: " + ditVaeBinary);
 		busy = false;
 		return;
 	}
@@ -150,7 +150,7 @@ void AceStep::qwenProcFinished(int code, QProcess::ExitStatus status)
 	request.requestLlmFilePath = tempDir + "/request_" + QString::number(request.uid) + "0.json";
 	if (!QFileInfo::exists(request.requestLlmFilePath))
 	{
-		generationError("ace-qwen3 failed to create enhanced request file "+request.requestLlmFilePath);
+		generationError("ace-lm failed to create enhanced request file "+request.requestLlmFilePath);
 		busy = false;
 		return;
 	}
@@ -172,7 +172,7 @@ void AceStep::qwenProcFinished(int code, QProcess::ExitStatus status)
 		}
 	}
 
-	// Step 2: Run dit-vae to generate audio
+	// Step 2: Run ace-synth to generate audio
 	QStringList ditVaeArgs;
 	ditVaeArgs << "--request"<<request.requestLlmFilePath;
 	ditVaeArgs << "--text-encoder"<<request.textEncoderModelPath;
@@ -191,7 +191,7 @@ void AceStep::ditProcFinished(int code, QProcess::ExitStatus status)
 	if (code != 0)
 	{
 		QString errorOutput = ditVaeProcess.readAllStandardError();
-		generationError("dit-vae exited with code " + QString::number(code) + ": " + errorOutput);
+		generationError("ace-synth exited with code " + QString::number(code) + ": " + errorOutput);
 		busy = false;
 		return;
 	}
