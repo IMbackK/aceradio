@@ -57,7 +57,7 @@ bool AceStep::requestGeneration(SongItem song, QString requestTemplate, QString 
 
 	request = {song, QRandomGenerator::global()->generate(), aceStepPath, textEncoderModelPath, ditModelPath, vaeModelPath};
 
-	QString qwen3Binary = aceStepPath + "/ace-lm";
+	QString qwen3Binary = aceStepPath + "/ace-lm" + EXE_EXT;
 	QFileInfo qwen3Info(qwen3Binary);
 	if (!qwen3Info.exists() || !qwen3Info.isExecutable())
 	{
@@ -141,7 +141,7 @@ void AceStep::qwenProcFinished(int code, QProcess::ExitStatus status)
 		return;
 	}
 
-	QString ditVaeBinary = request.aceStepPath + "/ace-synth";
+	QString ditVaeBinary = request.aceStepPath + "/ace-synth" + EXE_EXT;
 	QFileInfo ditVaeInfo(ditVaeBinary);
 	if (!ditVaeInfo.exists() || !ditVaeInfo.isExecutable())
 	{
