@@ -8,6 +8,12 @@
 
 #include "SongItem.h"
 
+#ifdef Q_OS_WIN
+inline const QString EXE_EXT = ".exe";
+#else
+inline const QString EXE_EXT = "";
+#endif
+
 class AceStep : public QObject
 {
 	Q_OBJECT

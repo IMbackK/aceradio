@@ -28,12 +28,36 @@ make -j$(nproc)
 
 ## Building
 
+### Linux / macOS
 ```bash
 git clone https://github.com/IMbackK/aceradio.git
 cd aceradio
 mkdir build && cd build
 cmake ..
 make -j$(nproc)
+```
+
+### Windows (Qt6 + CMake)
+
+To build on Windows, ensure you have **CMake** and **Qt6** installed. Run the following commands in **Command Prompt (cmd)** or **PowerShell**:
+
+1. **Configure and Build:**
+```cmd
+git clone https://github.com/IMbackK/aceradio.git
+cd aceradio
+mkdir build
+cmake -B build -DCMAKE_PREFIX_PATH="C:/Qt/6.x.x/msvc2019_64"
+
+# Use --parallel to build using all CPU cores
+# Or use -j N (e.g., -j 4) to limit the number of threads
+cmake --build build --config Release --parallel
+```
+Note: Replace C:/Qt/6.x.x/msvc2019_64 with your actual Qt installation path.
+
+2. **Deploy Dependencies:**
+Run windeployqt to copy necessary Qt libraries to the build folder:
+```cmd
+"C:\Qt\6.x.x\msvc2019_64\bin\windeployqt.exe" --no-translations build\Release\aceradio.exe
 ```
 
 ## Setup Paths:
