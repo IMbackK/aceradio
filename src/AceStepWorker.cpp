@@ -122,7 +122,7 @@ bool AceStep::requestGeneration(SongItem song, QString requestTemplate, QString 
 
 	QStringList qwen3Args;
 	qwen3Args << "--request" << request.requestFilePath;
-	qwen3Args << "--model" << qwen3ModelPath;
+	qwen3Args << "--lm" << qwen3ModelPath;
 
 	progressUpdate(30);
 
@@ -178,7 +178,7 @@ void AceStep::qwenProcFinished(int code, QProcess::ExitStatus status)
 	// Step 2: Run ace-synth to generate audio
 	QStringList ditVaeArgs;
 	ditVaeArgs << "--request"<<request.requestLlmFilePath;
-	ditVaeArgs << "--text-encoder"<<request.textEncoderModelPath;
+	ditVaeArgs << "--embedding"<<request.textEncoderModelPath;
 	ditVaeArgs << "--dit"<<request.ditModelPath;
 	ditVaeArgs << "--vae"<<request.vaeModelPath;
 	ditVaeArgs << "--wav";
