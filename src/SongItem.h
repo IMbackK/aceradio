@@ -7,22 +7,25 @@
 #include <QString>
 #include <QRandomGenerator>
 #include <cstdint>
+#include <QJsonObject>
 
 class SongItem
 {
 public:
 	QString caption;
 	QString lyrics;
-	uint64_t uniqueId;
-	QString file;
+	unsigned int bpm;
+	QString key;
 	QString vocalLanguage;
 	bool cotCaption;
+
+	uint64_t uniqueId;
+	QString file;
 	QString json;
 
-	inline SongItem(const QString &caption = "", const QString &lyrics = "")
-		: caption(caption), lyrics(lyrics), cotCaption(true)
-	{
-		// Generate a unique ID using a cryptographically secure random number
-		uniqueId = QRandomGenerator::global()->generate64();
-	}
+	SongItem(const QString &caption = "", const QString &lyrics = "");
+	SongItem(const QJsonObject& json);
+
+	void store(QJsonObject& json) const;
+	void load(const QJsonObject& json);
 };

@@ -37,6 +37,7 @@ public:
 
 	// Editable:
 	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+	void updateSong(const QModelIndex &index, const SongItem& song);
 	Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	// Add/remove songs

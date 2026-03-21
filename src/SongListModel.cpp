@@ -111,6 +111,26 @@ bool SongListModel::setData(const QModelIndex &index, const QVariant &value, int
 	return true;
 }
 
+void SongListModel::updateSong(const QModelIndex &index, const SongItem& song)
+{
+	const SongItem &oldSong = songList[index.row()];
+
+	if(song.caption != oldSong.caption)
+	{
+		emit dataChanged(index, index, {CaptionRole});
+	}
+	if(song.lyrics != oldSong.lyrics)
+	{
+		emit dataChanged(index, index, {LyricsRole});
+	}
+	if(song.vocalLanguage != oldSong.vocalLanguage)
+	{
+		emit dataChanged(index, index, {VocalLanguageRole});
+	}
+
+	songList[index.row()] = song;
+}
+
 Qt::ItemFlags SongListModel::flags(const QModelIndex &index) const
 {
 	if (!index.isValid())

@@ -40,6 +40,8 @@ add_executable(${PROJECT_NAME}
     ${MusicGeneratorGUI_H}
     res/resources.qrc
     src/elidedlabel.h src/elidedlabel.cpp
+    src/SongItem.cpp
+
 )
 
 # UI file

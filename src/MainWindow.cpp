@@ -291,12 +291,7 @@ void MainWindow::on_addSongButton_clicked()
 
 	if (dialog.exec() == QDialog::Accepted)
 	{
-		QString caption = dialog.getCaption();
-		QString lyrics = dialog.getLyrics();
-		QString vocalLanguage = dialog.getVocalLanguage();
-
-		SongItem newSong(caption, lyrics);
-		newSong.vocalLanguage = vocalLanguage;
+		SongItem newSong = dialog.getSong();
 		songModel->addSong(newSong);
 
 		// Select the new item
@@ -335,18 +330,10 @@ void MainWindow::on_songListView_doubleClicked(const QModelIndex &index)
 	{
 		SongItem song = songModel->getSong(row);
 
-		SongDialog dialog(this, song.caption, song.lyrics, song.vocalLanguage);
+		SongDialog dialog(this, song);
 
 		if (dialog.exec() == QDialog::Accepted)
-		{
-			QString caption = dialog.getCaption();
-			QString lyrics = dialog.getLyrics();
-			QString vocalLanguage = dialog.getVocalLanguage();
-
-			songModel->setData(songModel->index(row, 1), caption, SongListModel::CaptionRole);
-			songModel->setData(songModel->index(row, 1), lyrics, SongListModel::LyricsRole);
-			songModel->setData(songModel->index(row, 1), vocalLanguage, SongListModel::VocalLanguageRole);
-		}
+			songModel->updateSong(songModel->index(row, 1), dialog.getSong());
 	}
 
 	connect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
@@ -695,17 +682,13 @@ bool MainWindow::savePlaylistToJson(const QString &filePath, const QList<SongIte
 	for (const SongItem &song : songs)
 	{
 		QJsonObject songObj;
-		songObj["caption"] = song.caption;
-		songObj["lyrics"] = song.lyrics;
-		songObj["vocalLanguage"] = song.vocalLanguage;
-		songObj["uniqueId"] = static_cast<qint64>(song.uniqueId);
-		songObj["use_cot_caption"] = song.cotCaption;
+		song.store(songObj);
 		songsArray.append(songObj);
 	}
 
 	QJsonObject rootObj;
 	rootObj["songs"] = songsArray;
-	rootObj["version"] = "1.0";
+	rootObj["version"] = "1.1";
 
 	QJsonDocument doc(rootObj);
 	QByteArray jsonData = doc.toJson();
@@ -754,8 +737,7 @@ bool MainWindow::loadPlaylistFromJson(const QString &filePath, QList<SongItem> &
 
 	QJsonObject rootObj = doc.object();
 
-	// Check for version compatibility
-	if (rootObj.contains("version") && rootObj["version"].toString() != "1.0")
+	if (rootObj.contains("version") && rootObj["version"].toString() != "1.0" && rootObj["version"].toString() != "1.1")
 	{
 		qWarning() << "Unsupported playlist version:" << rootObj["version"].toString();
 		return false;
@@ -777,24 +759,7 @@ bool MainWindow::loadPlaylistFromJson(const QString &filePath, QList<SongItem> &
 			continue;
 
 		QJsonObject songObj = value.toObject();
-		SongItem song;
-
-		if (songObj.contains("caption"))
-			song.caption = songObj["caption"].toString();
-
-		if (songObj.contains("lyrics"))
-			song.lyrics = songObj["lyrics"].toString();
-
-		if (songObj.contains("vocalLanguage"))
-			song.vocalLanguage = songObj["vocalLanguage"].toString();
-
-		if (songObj.contains("uniqueId"))
-			song.uniqueId = static_cast<uint64_t>(songObj["uniqueId"].toInteger());
-		else
-			song.uniqueId = QRandomGenerator::global()->generate64();
-
-		song.cotCaption = songObj["use_cot_caption"].toBool(true);
-
+		SongItem song(songObj);
 		songs.append(song);
 	}
 

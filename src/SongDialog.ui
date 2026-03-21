@@ -58,21 +58,66 @@
     <widget class="QPlainTextEdit" name="lyricsEdit"/>
    </item>
    <item>
-    <widget class="QLabel" name="vocalLanguageLabel">
-     <property name="text">
-      <string>Vocal Language:</string>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="topMargin">
+      <number>5</number>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignTop</set>
-     </property>
-    </widget>
+     <item row="1" column="0">
+      <widget class="QLabel" name="keyScalelabel">
+       <property name="text">
+        <string>Keyscale</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="vocalLanguageCombo">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="vocalLanguageLabel">
+       <property name="text">
+        <string>Vocal Language:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="keyScaleCombo">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Bpm (0 for llm chooses)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="bpmSpinBox">
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
-    <widget class="QComboBox" name="vocalLanguageCombo">
-     <property name="editable">
-      <bool>true</bool>
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="">
+     <property name="spacing">
+      <number>5</number>
      </property>
-    </widget>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="buttonLayout">
