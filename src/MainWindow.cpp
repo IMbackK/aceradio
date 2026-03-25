@@ -242,7 +242,7 @@ void MainWindow::on_playButton_clicked()
 
 void MainWindow::on_pauseButton_clicked()
 {
-	if (isPlaying && !isPaused)
+	if (isPlaying && !isPaused && audioPlayer->isPlaying())
 	{
 		// Pause playback
 		audioPlayer->pause();
@@ -408,6 +408,7 @@ void MainWindow::playSong(const SongItem& song)
 	ui->nowPlayingLabel->setText("Now Playing: " + song.caption);
 	ui->lyricsTextEdit->setPlainText(song.lyrics);
 	ui->jsonTextEdit->setPlainText(song.json);
+	updateControls();
 }
 
 void MainWindow::songGenerated(const SongItem& song)
