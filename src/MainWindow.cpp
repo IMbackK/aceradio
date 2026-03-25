@@ -311,6 +311,7 @@ void MainWindow::on_songListView_doubleClicked(const QModelIndex &index)
 
 	if (index.column() == 0)
 	{
+		isPaused = false;
 		if (isPlaying)
 		{
 			audioPlayer->stop();
@@ -318,8 +319,8 @@ void MainWindow::on_songListView_doubleClicked(const QModelIndex &index)
 		else
 		{
 			isPlaying = true;
-			updateControls();
 		}
+		updateControls();
 
 		flushGenerationQueue();
 		ui->nowPlayingLabel->setText("Now Playing: Waiting for generation...");
