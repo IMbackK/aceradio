@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
 	  ui(new Ui::MainWindow),
 	  songModel(new SongListModel(this)),
 	  audioPlayer(new AudioPlayer(this)),
-	  aceStep(new AceStepWorker(this)),
+	  aceStep(new AceStepWorker),
 	  playbackTimer(new QTimer(this)),
 	  isPlaying(false),
 	  isPaused(false),
@@ -101,6 +101,8 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->nowPlayingLabel->setText("Now Playing:");
 
 	currentSong = songModel->getSong(0);
+
+	aceThread.start();
 }
 
 MainWindow::~MainWindow()
@@ -568,7 +570,7 @@ void MainWindow::ensureSongsInQueue(bool enqeueCurrent)
 	isGeneratingNext = true;
 
 	ui->statusbar->showMessage("Generateing: "+nextSong.caption);
-	aceStep->requestGeneration(nextSong, jsonTemplate);
+	QMetaObject::invokeMethod(aceStep, &AceStepWorker::requestGeneration, Qt::QueuedConnection, nextSong, jsonTemplate);
 }
 
 void MainWindow::flushGenerationQueue()
