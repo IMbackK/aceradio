@@ -319,14 +319,13 @@ void AceStepWorker::runGeneration()
 		if (m_cancelRequested.load())
 		{
 			emit generationCanceled(m_currentSong);
-			unloadModels();
 			m_busy.store(false);
 			return;
 		}
 
 		if (lmResult != 0)
 		{
-			emit generationError("LM generation failed or was canceled");
+			emit generationError("LM generation failed");
 			unloadModels();
 			m_busy.store(false);
 			return;

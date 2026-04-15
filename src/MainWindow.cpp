@@ -102,6 +102,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 	currentSong = songModel->getSong(0);
 
+	// Start the worker thread and enter its event loop
+	QObject::connect(&aceThread, &QThread::started, [this]() {qDebug() << "Worker thread started";});
 	aceThread.start();
 }
 
