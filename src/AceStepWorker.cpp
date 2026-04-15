@@ -55,6 +55,11 @@ void AceStepWorker::setLowVramMode(bool enabled)
 	m_lowVramMode = enabled;
 }
 
+void AceStepWorker::setFlashAttention(bool enabled)
+{
+	m_flashAttention = enabled;
+}
+
 bool AceStepWorker::isGenerating(SongItem* song)
 {
 	if (!m_busy.load() && song)
@@ -440,7 +445,7 @@ bool AceStepWorker::loadModels()
 	ace_lm_default_params(&lmParams);
 	lmParams.model_path = m_lmModelPathBytes.constData();
 	lmParams.use_fsm = true;
-	lmParams.use_fa = true;
+	lmParams.use_fa = m_flashAttention;
 
 	m_lmContext = ace_lm_load(&lmParams);
 	if (!m_lmContext)
@@ -455,7 +460,7 @@ bool AceStepWorker::loadModels()
 	synthParams.text_encoder_path = m_textEncoderPathBytes.constData();
 	synthParams.dit_path = m_ditPathBytes.constData();
 	synthParams.vae_path = m_vaePathBytes.constData();
-	synthParams.use_fa = true;
+	synthParams.use_fa = m_flashAttention;
 
 	m_synthContext = ace_synth_load(&synthParams);
 	if (!m_synthContext)
@@ -494,7 +499,7 @@ bool AceStepWorker::loadLm()
 	ace_lm_default_params(&lmParams);
 	lmParams.model_path = m_lmModelPathBytes.constData();
 	lmParams.use_fsm = true;
-	lmParams.use_fa = true;
+	lmParams.use_fa = m_flashAttention;
 
 	m_lmContext = ace_lm_load(&lmParams);
 	if (!m_lmContext)
@@ -524,7 +529,7 @@ bool AceStepWorker::loadSynth()
 	synthParams.text_encoder_path = m_textEncoderPathBytes.constData();
 	synthParams.dit_path = m_ditPathBytes.constData();
 	synthParams.vae_path = m_vaePathBytes.constData();
-	synthParams.use_fa = true;
+	synthParams.use_fa = m_flashAttention;
 
 	m_synthContext = ace_synth_load(&synthParams);
 	if (!m_synthContext)

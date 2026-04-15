@@ -42,6 +42,26 @@
 								                                                                         </widget>
 								                                                                         </item>
 								<item>
+							<widget class="QCheckBox" name="flashAttentionCheckBox">
+								                                                                         <property name="text">
+								                                                                             <string>Flash Attention</string>
+								                                                                         </property>
+								                                                                         <property name="checked">
+								                                                                                 <bool>true</bool>
+								                                                                         </property>
+								                                                                         </widget>
+								                                                                         </item>
+								<item>
+							<widget class="QLabel" name="flashAttentionLabel">
+								                                                                         <property name="text">
+								                                                                             <string>Use flash attention for faster generation. Disable if experiencing issues.</string>
+								                                                                         </property>
+								                                                                         <property name="wordWrap">
+								                                                                                 <bool>true</bool>
+								                                                                         </property>
+								                                                                         </widget>
+								                                                                         </item>
+								<item>
 							<spacer name="verticalSpacer">
 							                                 <property name="orientation">
 							                                     <enum>Qt::Vertical</enum>

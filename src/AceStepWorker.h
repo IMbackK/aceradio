@@ -38,6 +38,10 @@ public:
 	void setLowVramMode(bool enabled);
 	bool isLowVramMode() const { return m_lowVramMode; }
 
+	// Flash attention mode
+	void setFlashAttention(bool enabled);
+	bool isFlashAttention() const { return m_flashAttention; }
+
 	// Request a new song generation
 	bool requestGeneration(SongItem song, QString requestTemplate);
 
@@ -75,6 +79,7 @@ private:
 	std::atomic<bool> m_cancelRequested{false};
 	std::atomic<bool> m_modelsLoaded{false};
 	bool m_lowVramMode = false;
+	bool m_flashAttention = true;
 
 	// Current request data
 	SongItem m_currentSong;

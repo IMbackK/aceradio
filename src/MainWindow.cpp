@@ -159,6 +159,10 @@ void MainWindow::loadSettings()
 	// Load low VRAM mode
 	bool lowVram = settings.value("lowVramMode", false).toBool();
 	aceStep->setLowVramMode(lowVram);
+
+	// Load flash attention setting
+	bool flashAttention = settings.value("flashAttention", true).toBool();
+	aceStep->setFlashAttention(flashAttention);
 }
 
 void MainWindow::saveSettings()
@@ -180,6 +184,9 @@ void MainWindow::saveSettings()
 
 	// Save low VRAM mode
 	settings.setValue("lowVramMode", aceStep->isLowVramMode());
+
+	// Save flash attention setting
+	settings.setValue("flashAttention", aceStep->isFlashAttention());
 
 	settings.setValue("firstRun", false);
 }
@@ -382,6 +389,7 @@ void MainWindow::on_advancedSettingsButton_clicked()
 	dialog.setDiTModelPath(ditModelPath);
 	dialog.setVAEModelPath(vaeModelPath);
 	dialog.setLowVramMode(aceStep->isLowVramMode());
+	dialog.setFlashAttention(aceStep->isFlashAttention());
 
 	if (dialog.exec() == QDialog::Accepted)
 	{
@@ -407,6 +415,9 @@ void MainWindow::on_advancedSettingsButton_clicked()
 
 		// Update low VRAM mode
 		aceStep->setLowVramMode(dialog.getLowVramMode());
+
+		// Update flash attention setting
+		aceStep->setFlashAttention(dialog.getFlashAttention());
 
 		saveSettings();
 	}

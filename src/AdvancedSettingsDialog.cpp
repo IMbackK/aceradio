@@ -55,6 +55,11 @@ bool AdvancedSettingsDialog::getLowVramMode() const
 	return ui->lowVramCheckBox->isChecked();
 }
 
+bool AdvancedSettingsDialog::getFlashAttention() const
+{
+	return ui->flashAttentionCheckBox->isChecked();
+}
+
 void AdvancedSettingsDialog::setJsonTemplate(const QString &templateStr)
 {
 	ui->jsonTemplateEdit->setPlainText(templateStr);
@@ -88,6 +93,11 @@ void AdvancedSettingsDialog::setVAEModelPath(const QString &path)
 void AdvancedSettingsDialog::setLowVramMode(bool enabled)
 {
 	ui->lowVramCheckBox->setChecked(enabled);
+}
+
+void AdvancedSettingsDialog::setFlashAttention(bool enabled)
+{
+	ui->flashAttentionCheckBox->setChecked(enabled);
 }
 
 void AdvancedSettingsDialog::on_aceStepBrowseButton_clicked()
