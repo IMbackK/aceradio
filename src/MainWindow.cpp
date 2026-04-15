@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
 	  ui(new Ui::MainWindow),
 	  songModel(new SongListModel(this)),
 	  audioPlayer(new AudioPlayer(this)),
-	  aceStep(new AceStep(this)),
+	  aceStep(new AceStepWorker(this)),
 	  playbackTimer(new QTimer(this)),
 	  isPlaying(false),
 	  isPaused(false),
@@ -40,6 +40,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 	// Load settings
 	loadSettings();
+
+	// Set model paths for acestep.cpp
+	aceStep->setModelPaths(qwen3ModelPath, textEncoderModelPath, ditModelPath, vaeModelPath);
 
 	// Auto-load playlist from config location on startup
 	autoLoadPlaylist();
@@ -62,10 +65,10 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(audioPlayer, &AudioPlayer::playbackStarted, this, &MainWindow::playbackStarted);
 	connect(audioPlayer, &AudioPlayer::positionChanged, this, &MainWindow::updatePosition);
 	connect(audioPlayer, &AudioPlayer::durationChanged, this, &MainWindow::updateDuration);
-	connect(aceStep, &AceStep::songGenerated, this, &MainWindow::songGenerated);
-	connect(aceStep, &AceStep::generationCanceled, this, &MainWindow::generationCanceld);
-	connect(aceStep, &AceStep::generationError, this, &MainWindow::generationError);
-	connect(aceStep, &AceStep::progressUpdate, ui->progressBar, &QProgressBar::setValue);
+	connect(aceStep, &AceStepWorker::songGenerated, this, &MainWindow::songGenerated);
+	connect(aceStep, &AceStepWorker::generationCanceled, this, &MainWindow::generationCanceld);
+	connect(aceStep, &AceStepWorker::generationError, this, &MainWindow::generationError);
+	connect(aceStep, &AceStepWorker::progressUpdate, ui->progressBar, &QProgressBar::setValue);
 
 	// Connect double-click on song list for editing (works with QTableView too)
 	connect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
@@ -391,6 +394,9 @@ void MainWindow::on_advancedSettingsButton_clicked()
 		ditModelPath = dialog.getDiTModelPath();
 		vaeModelPath = dialog.getVAEModelPath();
 
+		// Update model paths for acestep.cpp
+		aceStep->setModelPaths(qwen3ModelPath, textEncoderModelPath, ditModelPath, vaeModelPath);
+
 		saveSettings();
 	}
 }
@@ -533,10 +539,7 @@ void MainWindow::ensureSongsInQueue(bool enqeueCurrent)
 	isGeneratingNext = true;
 
 	ui->statusbar->showMessage("Generateing: "+nextSong.caption);
-	aceStep->requestGeneration(nextSong, jsonTemplate,
-	                            aceStepPath, qwen3ModelPath,
-	                            textEncoderModelPath, ditModelPath,
-	                            vaeModelPath);
+	aceStep->requestGeneration(nextSong, jsonTemplate);
 }
 
 void MainWindow::flushGenerationQueue()

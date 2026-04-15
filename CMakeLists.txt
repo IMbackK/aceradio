@@ -10,7 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find Qt packages
 find_package(Qt6 COMPONENTS Core Gui Widgets Multimedia REQUIRED)
 
-# Note: acestep.cpp binaries and models should be provided at runtime
+# Add acestep.cpp subdirectory
+add_subdirectory(third_party/acestep.cpp)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -47,20 +48,21 @@ add_executable(${PROJECT_NAME}
 # UI file
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Link libraries (only Qt libraries - acestep.cpp is external)
+# Link libraries (Qt + acestep.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
     Qt6::Multimedia
+    acestep-core
+    ggml
 )
 
-# Include directories (only our source directory - acestep.cpp is external)
+# Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acestep.cpp/src
 )
-
-# Note: acestep.cpp binaries (ace-qwen3, dit-vae) and models should be provided at runtime
 
 # Install targets
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
@@ -71,3 +73,24 @@ install(FILES res/xyz.uvos.aceradio.desktop DESTINATION share/applications)
 # Install icon files
 install(FILES res/xyz.uvos.aceradio.png DESTINATION share/icons/hicolor/256x256/apps RENAME xyz.uvos.aceradio.png)
 install(FILES res/xyz.uvos.aceradio.svg DESTINATION share/icons/hicolor/scalable/apps RENAME xyz.uvos.aceradio.svg)
+
+# Test executable
+add_executable(test_acestep_worker
+    tests/test_acestep_worker.cpp
+    src/AceStepWorker.cpp
+    src/AceStepWorker.h
+    src/SongItem.cpp
+    src/SongItem.h
+)
+
+target_link_libraries(test_acestep_worker PRIVATE
+    Qt6::Core
+    Qt6::Widgets
+    acestep-core
+    ggml
+)
+
+target_include_directories(test_acestep_worker PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acestep.cpp/src
+)

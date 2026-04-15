@@ -8,40 +8,34 @@
 
 #include <QObject>
 #include <QString>
-#include <QProcess>
+#include <QThread>
 #include <QStandardPaths>
+#include <atomic>
 
 #include "SongItem.h"
 
-#ifdef Q_OS_WIN
-inline const QString EXE_EXT = ".exe";
-#else
-inline const QString EXE_EXT = "";
-#endif
+// acestep.cpp headers
+#include "request.h"
 
-class AceStep : public QObject
+struct AceLm;
+struct AceSynth;
+
+class AceStepWorker : public QObject
 {
 	Q_OBJECT
-	QProcess qwenProcess;
-	QProcess ditVaeProcess;
 
-	bool busy = false;
+public:
+	explicit AceStepWorker(QObject* parent = nullptr);
+	~AceStepWorker();
 
-	struct Request
-	{
-		SongItem song;
-		uint64_t uid;
-		QString aceStepPath;
-		QString textEncoderModelPath;
-		QString ditModelPath;
-		QString vaeModelPath;
-		QString requestFilePath;
-		QString requestLlmFilePath;
-	};
+	bool isGenerating(SongItem* song = nullptr);
+	void cancelGeneration();
 
-	Request request;
+	// Model paths - set these before first generation
+	void setModelPaths(QString lmPath, QString textEncoderPath, QString ditPath, QString vaePath);
 
-	const QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+	// Request a new song generation
+	bool requestGeneration(SongItem song, QString requestTemplate);
 
 signals:
 	void songGenerated(SongItem song);
@@ -49,19 +43,50 @@ signals:
 	void generationError(QString error);
 	void progressUpdate(int progress);
 
-public slots:
-	bool requestGeneration(SongItem song, QString requestTemplate, QString aceStepPath,
-						   QString qwen3ModelPath, QString textEncoderModelPath, QString ditModelPath,
-						   QString vaeModelPath);
-
-public:
-	AceStep(QObject* parent = nullptr);
-	bool isGenerating(SongItem* song = nullptr);
-	void cancelGeneration();
-
 private slots:
-	void qwenProcFinished(int code, QProcess::ExitStatus status);
-	void ditProcFinished(int code, QProcess::ExitStatus status);
+	void runGeneration();
+
+private:
+	// Check if cancellation was requested
+	static bool checkCancel(void* data);
+
+	// Load models if not already loaded
+	bool loadModels();
+	void unloadModels();
+
+	// Convert SongItem to AceRequest
+	AceRequest songToRequest(const SongItem& song, const QString& templateJson);
+
+	// Convert AceRequest back to SongItem
+	SongItem requestToSong(const AceRequest& req, const QString& json);
+
+	// Generation state
+	std::atomic<bool> m_busy{false};
+	std::atomic<bool> m_cancelRequested{false};
+	std::atomic<bool> m_modelsLoaded{false};
+
+	// Current request data
+	SongItem m_currentSong;
+	QString m_requestTemplate;
+	uint64_t m_uid;
+
+	// Model paths
+	QString m_lmModelPath;
+	QString m_textEncoderPath;
+	QString m_ditPath;
+	QString m_vaePath;
+
+	// Loaded models (accessed from worker thread only)
+	AceLm* m_lmContext = nullptr;
+	AceSynth* m_synthContext = nullptr;
+
+	// Cached model paths as byte arrays (to avoid dangling pointers)
+	QByteArray m_lmModelPathBytes;
+	QByteArray m_textEncoderPathBytes;
+	QByteArray m_ditPathBytes;
+	QByteArray m_vaePathBytes;
+
+	const QString m_tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
 };
 
 #endif // ACESTEPWORKER_H

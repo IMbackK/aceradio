@@ -36,7 +36,7 @@ class MainWindow : public QMainWindow
 	SongListModel *songModel;
 	AudioPlayer *audioPlayer;
 	QThread aceThread;
-	AceStep *aceStep;
+	AceStepWorker *aceStep;
 	QTimer *playbackTimer;
 
 	QString formatTime(int milliseconds);
