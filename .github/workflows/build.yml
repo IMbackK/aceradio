@@ -7,9 +7,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install dependancies
-        run: sudo apt update; sudo apt install -y libusb-1.0-0-dev cmake qt6-base-dev qt6-base-dev-tools qt6-tools-dev-tools libqt6widgets6 libqt6multimedia6 qt6-multimedia-dev ffmpeg wget libglx-dev libgl1-mesa-dev qt6-qpa-plugins
+        run:  |
+            sudo add-apt-repository -y ppa:kisak/kisak-mesa
+            sudo apt update
+            sudo apt install -y build-essential mesa-vulkan-drivers libusb-1.0-0-dev cmake qt6-base-dev qt6-base-dev-tools qt6-tools-dev-tools libqt6widgets6 libqt6multimedia6 qt6-multimedia-dev ffmpeg wget  libglx-dev libgl1-mesa-dev qt6-qpa-plugins
+      - name: Get latest Vulkan SDK version
+        id: vulkan_sdk_version
+        run: |
+            echo "VULKAN_SDK_VERSION=$(curl https://vulkan.lunarg.com/sdk/latest/linux.txt)" >> "$GITHUB_ENV"
+      - name: Setup Vulkan SDK
+        uses: ./.github/actions/linux-setup-vulkan
+        with:
+          path: ./vulkan_sdk
+          version: ${{ env.VULKAN_SDK_VERSION }}
       - name: Check out repository code
         uses: actions/checkout@v6
+        with:
+            submodules: 'true'
       - name: Install Appimagetool
         run: |
             wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
@@ -23,8 +37,9 @@ jobs:
             echo "tag=$(git describe --tags `git rev-list --tags --max-count=1`)" >> $GITHUB_OUTPUT
       - name: Build
         run: |
+            source ./vulkan_sdk/setup-env.sh
             mkdir ${{ github.workspace }}/build; cd ${{ github.workspace }}/build
-            cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./install/usr -DGIT_TAG=${{ steps.version.outputs.tag }} ..
+            cmake -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=ON -DCMAKE_INSTALL_PREFIX=./install/usr -DGIT_TAG=${{ steps.version.outputs.tag }} ..
             make -j $(nproc)
             make install
       - name: Create Appimage
