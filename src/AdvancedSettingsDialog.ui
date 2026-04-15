@@ -1,260 +1,260 @@
 <?xml version="1.0" encoding="UTF-8"?>
-                             <ui version="4.0">
-                                 <class>AdvancedSettingsDialog</class>
-		<widget class="QDialog" name="AdvancedSettingsDialog">
-			                                     <property name="geometry">
-			                                         <rect>
-			                                         <x>0</x>
-			                                         <y>0</y>
-			                                         <width>600</width>
-			                                         <height>450</height>
-			                                         </rect>
-			                                         </property>
-			                                         <property name="windowTitle">
-			                                             <string>Advanced Settings</string>
-			                                             </property>
-			<layout class="QVBoxLayout" name="verticalLayout">
-				                                                 <item>
-				<widget class="QTabWidget" name="tabWidget">
-					                                                     <property name="currentIndex">
-					                                                         <number>0</number>
-					                                                         </property>
-					<widget class="QWidget" name="performanceTab">
-						                                                             <attribute name="title">
-						                                                                 <string>Performance</string>
-						                                                                 </attribute>
-						<layout class="QVBoxLayout" name="performanceLayout">
-							                                                                     <item>
-							<widget class="QCheckBox" name="lowVramCheckBox">
-								                                                                         <property name="text">
-								                                                                             <string>Low VRAM Mode</string>
-								                                                                         </property>
-								                                                                         </widget>
-								                                                                         </item>
-								<item>
-							<widget class="QLabel" name="lowVramLabel">
-								                                                                         <property name="text">
-								                                                                             <string>Unload models between generation phases to save VRAM. Slower but uses less memory.</string>
-								                                                                         </property>
-								                                                                         <property name="wordWrap">
-								                                                                                 <bool>true</bool>
-								                                                                         </property>
-								                                                                         </widget>
-								                                                                         </item>
-								<item>
-							<widget class="QCheckBox" name="flashAttentionCheckBox">
-								                                                                         <property name="text">
-								                                                                             <string>Flash Attention</string>
-								                                                                         </property>
-								                                                                         <property name="checked">
-								                                                                                 <bool>true</bool>
-								                                                                         </property>
-								                                                                         </widget>
-								                                                                         </item>
-								<item>
-							<widget class="QLabel" name="flashAttentionLabel">
-								                                                                         <property name="text">
-								                                                                             <string>Use flash attention for faster generation. Disable if experiencing issues.</string>
-								                                                                         </property>
-								                                                                         <property name="wordWrap">
-								                                                                                 <bool>true</bool>
-								                                                                         </property>
-								                                                                         </widget>
-								                                                                         </item>
-								<item>
-							<spacer name="verticalSpacer">
-							                                 <property name="orientation">
-							                                     <enum>Qt::Vertical</enum>
-							                                 </property>
-							                                 <property name="sizeHint" stdset="0">
-							                                     <size>
-							                                         <width>20</width>
-							                                         <height>40</height>
-							                                     </size>
-							                                 </property>
-							                             </spacer>
-							                             </item>
-							                             </layout>
-							                             </widget>
-					<widget class="QWidget" name="jsonTab">
-						                                                             <attribute name="title">
-						                                                                 <string>JSON Template</string>
-						                                                                 </attribute>
-						<layout class="QVBoxLayout" name="jsonLayout">
-							                                                                     <item>
-							<widget class="QLabel" name="jsonLabel">
-								                                                                         <property name="text">
-								                                                                             <string>JSON Template for AceStep generation:</string>
-								                                                                             </property>
-								                                                                             <property name="wordWrap">
-								                                                                                 <bool>true</bool>
-								                                                                                 </property>
-								                                                                                 </widget>
-								                                                                                 </item>
-								                                                                                 <item>
-								<widget class="QTextEdit" name="jsonTemplateEdit"/>
-									                                                                                     </item>
-									                                                                                     </layout>
-									                                                                                     </widget>
-									<widget class="QWidget" name="pathsTab">
-										                                                                                         <attribute name="title">
-										                                                                                             <string>Model Paths</string>
-										                                                                                             </attribute>
-										<layout class="QFormLayout" name="pathsLayout">
-											                                                                                                 <property name="fieldGrowthPolicy">
-											                                                                                                     <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
-											                                                                                                     </property>
-											<item row="0" column="0">
-											<widget class="QLabel" name="aceStepLabel">
-											                                                                                                             <property name="text">
-											                                                                                                                 <string>AceStep Path:</string>
-											                                                                                                                 </property>
-											                                                                                                                 </widget>
-											                                                                                                                 </item>
-											<item row="0" column="1">
-											<layout class="QHBoxLayout" name="aceStepLayout">
-											                                                                                                                         <item>
-											<widget class="QLineEdit" name="aceStepPathEdit"/>
-											                                                                                                                             </item>
-											                                                                                                                             <item>
-											<widget class="QPushButton" name="aceStepBrowseButton">
-											                                                                                                                                 <property name="text">
-											                                                                                                                                     <string>Browse...</string>
-											                                                                                                                                     </property>
-											                                                                                                                                     </widget>
-											                                                                                                                                     </item>
-											                                                                                                                                     </layout>
-											                                                                                                                                     </item>
-											<item row="1" column="0">
-											<widget class="QLabel" name="qwen3Label">
-											                                                                                                                                             <property name="text">
-											                                                                                                                                                 <string>Qwen3 Model:</string>
-											                                                                                                                                                 </property>
-											                                                                                                                                                 </widget>
-											                                                                                                                                                 </item>
-											<item row="1" column="1">
-											<layout class="QHBoxLayout" name="qwen3Layout">
-											                                                                                                                                                         <item>
-											<widget class="QLineEdit" name="qwen3ModelEdit"/>
-											                                                                                                                                                             </item>
-											                                                                                                                                                             <item>
-											<widget class="QPushButton" name="qwen3BrowseButton">
-											                                                                                                                                                                 <property name="text">
-											                                                                                                                                                                     <string>Browse...</string>
-											                                                                                                                                                                     </property>
-											                                                                                                                                                                     </widget>
-											                                                                                                                                                                     </item>
-											                                                                                                                                                                     </layout>
-											                                                                                                                                                                     </item>
-											<item row="2" column="0">
-											<widget class="QLabel" name="textEncoderLabel">
-											                                                                                                                                                                             <property name="text">
-											                                                                                                                                                                                 <string>Text Encoder Model:</string>
-											                                                                                                                                                                                 </property>
-											                                                                                                                                                                                 </widget>
-											                                                                                                                                                                                 </item>
-											<item row="2" column="1">
-											<layout class="QHBoxLayout" name="textEncoderLayout">
-											                                                                                                                                                                                         <item>
-											<widget class="QLineEdit" name="textEncoderEdit"/>
-											                                                                                                                                                                                             </item>
-											                                                                                                                                                                                             <item>
-											<widget class="QPushButton" name="textEncoderBrowseButton">
-											                                                                                                                                                                                                 <property name="text">
-											                                                                                                                                                                                                     <string>Browse...</string>
-											                                                                                                                                                                                                     </property>
-											                                                                                                                                                                                                     </widget>
-											                                                                                                                                                                                                     </item>
-											                                                                                                                                                                                                     </layout>
-											                                                                                                                                                                                                     </item>
-											<item row="3" column="0">
-											<widget class="QLabel" name="ditLabel">
-											                                                                                                                                                                                                             <property name="text">
-											                                                                                                                                                                                                                 <string>DiT Model:</string>
-											                                                                                                                                                                                                                 </property>
-											                                                                                                                                                                                                                 </widget>
-											                                                                                                                                                                                                                 </item>
-											<item row="3" column="1">
-											<layout class="QHBoxLayout" name="ditLayout">
-											                                                                                                                                                                                                                         <item>
-											<widget class="QLineEdit" name="ditModelEdit"/>
-											                                                                                                                                                                                                                             </item>
-											                                                                                                                                                                                                                             <item>
-											<widget class="QPushButton" name="ditBrowseButton">
-											                                                                                                                                                                                                                                 <property name="text">
-											                                                                                                                                                                                                                                     <string>Browse...</string>
-											                                                                                                                                                                                                                                     </property>
-											                                                                                                                                                                                                                                     </widget>
-											                                                                                                                                                                                                                                     </item>
-											                                                                                                                                                                                                                                     </layout>
-											                                                                                                                                                                                                                                     </item>
-											<item row="4" column="0">
-											<widget class="QLabel" name="vaeLabel">
-											                                                                                                                                                                                                                                             <property name="text">
-											                                                                                                                                                                                                                                                 <string>VAE Model:</string>
-											                                                                                                                                                                                                                                                 </property>
-											                                                                                                                                                                                                                                                 </widget>
-											                                                                                                                                                                                                                                                 </item>
-											<item row="4" column="1">
-											<layout class="QHBoxLayout" name="vaeLayout">
-											                                                                                                                                                                                                                                                         <item>
-											<widget class="QLineEdit" name="vaeModelEdit"/>
-											                                                                                                                                                                                                                                                             </item>
-											                                                                                                                                                                                                                                                             <item>
-											<widget class="QPushButton" name="vaeBrowseButton">
-											                                                                                                                                                                                                                                                                 <property name="text">
-											                                                                                                                                                                                                                                                                     <string>Browse...</string>
-											                                                                                                                                                                                                                                                                     </property>
-											                                                                                                                                                                                                                                                                     </widget>
-											                                                                                                                                                                                                                                                                     </item>
-											                                                                                                                                                                                                                                                                     </layout>
-											                                                                                                                                                                                                                                                                     </item>
-											                                                                                                                                                                                                                                                                     </layout>
-											                                                                                                                                                                                                                                                                     </widget>
-											                                                                                                                                                                                                                                                                     </widget>
-											                                                                                                                                                                                                                                                                     </item>
-											                                                                                                                                                                                                                                                                     <item>
-											<widget class="QDialogButtonBox" name="buttonBox">
-											                                                                                                                                                                                                                                                                         <property name="standardButtons">
-											                                                                                                                                                                                                                                                                             <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Save</set>
-											                                                                                                                                                                                                                                                                             </property>
-											                                                                                                                                                                                                                                                                             </widget>
-											                                                                                                                                                                                                                                                                             </item>
-											                                                                                                                                                                                                                                                                             </layout>
-											                                                                                                                                                                                                                                                                             </widget>
-											                                                                                                                                                                                                                                                                             <resources/>
-											                                                                                                                                                                                                                                                                             <connections>
-											                                                                                                                                                                                                                                                                             <connection>
-											                                                                                                                                                                                                                                                                             <sender>buttonBox</sender>
-											                                                                                                                                                                                                                                                                             <signal>accepted()</signal>
-												                                                                                                                                                                                                                                                                             <receiver>AdvancedSettingsDialog</receiver>
-												                                                                                                                                                                                                                                                                             <slot>accept()</slot>
-												                                                                                                                                                                                                                                                                             <hints>
-												                                                                                                                                                                                                                                                                             <hint type="sourcelabel">
-												                                                                                                                                                                                                                                                                                 <x>248</x>
-												                                                                                                                                                                                                                                                                                 <y>254</y>
-												                                                                                                                                                                                                                                                                                 </hint>
-												                                                                                                                                                                                                                                                                                 <hint type="destinationlabel">
-												                                                                                                                                                                                                                                                                                     <x>157</x>
-												                                                                                                                                                                                                                                                                                     <y>254</y>
-												                                                                                                                                                                                                                                                                                     </hint>
-												                                                                                                                                                                                                                                                                                     </hints>
-												                                                                                                                                                                                                                                                                                     </connection>
-												                                                                                                                                                                                                                                                                                     <connection>
-												                                                                                                                                                                                                                                                                                     <sender>buttonBox</sender>
-												                                                                                                                                                                                                                                                                                     <signal>rejected()</signal>
-												                                                                                                                                                                                                                                                                                     <receiver>AdvancedSettingsDialog</receiver>
-												                                                                                                                                                                                                                                                                                     <slot>reject()</slot>
-												                                                                                                                                                                                                                                                                                     <hints>
-												                                                                                                                                                                                                                                                                                     <hint type="sourcelabel">
-												                                                                                                                                                                                                                                                                                         <x>316</x>
-												                                                                                                                                                                                                                                                                                         <y>260</y>
-												                                                                                                                                                                                                                                                                                         </hint>
-												                                                                                                                                                                                                                                                                                         <hint type="destinationlabel">
-												                                                                                                                                                                                                                                                                                             <x>286</x>
-												                                                                                                                                                                                                                                                                                             <y>260</y>
-												                                                                                                                                                                                                                                                                                             </hint>
-												                                                                                                                                                                                                                                                                                             </hints>
-												                                                                                                                                                                                                                                                                                             </connection>
-												                                                                                                                                                                                                                                                                                             </connections>
-												                                                                                                                                                                                                                                                                                             </ui>
+<ui version="4.0">
+ <class>AdvancedSettingsDialog</class>
+ <widget class="QDialog" name="AdvancedSettingsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>450</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Advanced Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="performanceTab">
+      <attribute name="title">
+       <string>Performance</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="performanceLayout">
+       <item>
+        <widget class="QCheckBox" name="lowVramCheckBox">
+         <property name="text">
+          <string>Low VRAM Mode</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lowVramLabel">
+         <property name="text">
+          <string>Unload models between generation phases to save VRAM. Slower but uses less memory.</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="flashAttentionCheckBox">
+         <property name="text">
+          <string>Flash Attention</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="flashAttentionLabel">
+         <property name="text">
+          <string>Use flash attention for faster generation. Disable if experiencing poor output quality on vulkan.</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="jsonTab">
+      <attribute name="title">
+       <string>JSON Template</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="jsonLayout">
+       <item>
+        <widget class="QLabel" name="jsonLabel">
+         <property name="text">
+          <string>JSON Template for AceStep generation:</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="jsonTemplateEdit"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pathsTab">
+      <attribute name="title">
+       <string>Model Paths</string>
+      </attribute>
+      <layout class="QFormLayout" name="pathsLayout">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="aceStepLabel">
+         <property name="text">
+          <string>AceStep Path:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="aceStepLayout">
+         <item>
+          <widget class="QLineEdit" name="aceStepPathEdit"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="aceStepBrowseButton">
+           <property name="text">
+            <string>Browse...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="qwen3Label">
+         <property name="text">
+          <string>Qwen3 Model:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="qwen3Layout">
+         <item>
+          <widget class="QLineEdit" name="qwen3ModelEdit"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="qwen3BrowseButton">
+           <property name="text">
+            <string>Browse...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="textEncoderLabel">
+         <property name="text">
+          <string>Text Encoder Model:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="textEncoderLayout">
+         <item>
+          <widget class="QLineEdit" name="textEncoderEdit"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="textEncoderBrowseButton">
+           <property name="text">
+            <string>Browse...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="ditLabel">
+         <property name="text">
+          <string>DiT Model:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <layout class="QHBoxLayout" name="ditLayout">
+         <item>
+          <widget class="QLineEdit" name="ditModelEdit"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="ditBrowseButton">
+           <property name="text">
+            <string>Browse...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="vaeLabel">
+         <property name="text">
+          <string>VAE Model:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <layout class="QHBoxLayout" name="vaeLayout">
+         <item>
+          <widget class="QLineEdit" name="vaeModelEdit"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="vaeBrowseButton">
+           <property name="text">
+            <string>Browse...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Save</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>AdvancedSettingsDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>254</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>AdvancedSettingsDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>260</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
 	  isGeneratingNext(false)
 {
 	aceStep->moveToThread(&aceThread);
+	aceThread.setObjectName("AceStep Woker Thread");
 
 	ui->setupUi(this);
 
@@ -110,6 +111,8 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
 	aceStep->cancelGeneration();
+	aceThread.quit();
+	aceThread.wait();
 
 	autoSavePlaylist();
 	saveSettings();
@@ -165,7 +168,7 @@ void MainWindow::loadSettings()
 	aceStep->setLowVramMode(lowVram);
 
 	// Load flash attention setting
-	bool flashAttention = settings.value("flashAttention", true).toBool();
+	bool flashAttention = settings.value("flashAttention", false).toBool();
 	aceStep->setFlashAttention(flashAttention);
 }
 
