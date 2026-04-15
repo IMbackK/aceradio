@@ -69,7 +69,7 @@ void AudioPlayer::play(std::shared_ptr<QByteArray> audioData)
 	buffer->setParent(this);
 
 	// Use QMediaPlayer::setSourceDevice for in-memory playback
-	mediaPlayer->setSourceDevice(buffer, QUrl("memory://audio.wav"));
+	mediaPlayer->setSourceDevice(buffer);
 	mediaPlayer->play();
 
 	// Start position timer

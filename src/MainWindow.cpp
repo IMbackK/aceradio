@@ -61,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->actionLoadPlaylist, &QAction::triggered, this, &MainWindow::onActionLoadPlaylist);
 	connect(ui->actionAppendPlaylist, &QAction::triggered, this, &MainWindow::onActionAppendPlaylist);
 	connect(ui->actionSaveSong, &QAction::triggered, this, &MainWindow::onActionSaveSong);
+	connect(ui->positionSlider, &QSlider::sliderMoved, this, &MainWindow::onPositionSliderSliderMoved);
 	connect(ui->actionQuit, &QAction::triggered, this, [this]()
 	{
 		close();
