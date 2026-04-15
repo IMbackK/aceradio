@@ -12,19 +12,11 @@ A C++ Qt graphical user interface for generating music using [acestep.cpp](https
 
 ## Installing
 
-1. Grab the latest release from https://github.com/IMbackK/aceradio/releases/
-2. For now you will have to provide acestep.cpp binaries, these can be optained by following the instructions at https://github.com/ServeurpersoCom/acestep.cpp or the **Build acestep.cpp** section below
+Grab the latest release from https://github.com/IMbackK/aceradio/releases/
 
-## Build acestep.cpp:
+## Models
 
-```bash
-git clone https://github.com/ServeurpersoCom/acestep.cpp.git
-cd acestep.cpp
-mkdir build && cd build
-cmake .. -DGGML_VULKAN=ON  # or other backend
-make -j$(nproc)
-./models.sh  # Download models (requires ~7.7 GB free space)
-```
+grab the models from [here](https://huggingface.co/Serveurperso/ACE-Step-1.5-GGUF/tree/main)
 
 ## Building
 
@@ -62,7 +54,7 @@ Run windeployqt to copy necessary Qt libraries to the build folder:
 
 ## Setup Paths:
 
-Go to settings->Ace Step->Model Paths and add the paths to the acestep.cpp binaries the models.
+Go to settings->Ace Step->Model Paths and add the paths to the AceStep models.
 
 ## License
 
