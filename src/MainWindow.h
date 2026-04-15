@@ -67,19 +67,19 @@ public slots:
 	void show();
 
 private slots:
-	void on_playButton_clicked();
-	void on_pauseButton_clicked();
-	void on_skipButton_clicked();
-	void on_stopButton_clicked();
-	void on_shuffleButton_clicked();
-	void on_positionSlider_sliderMoved(int position);
+	void onPlayButtonClicked();
+	void onPauseButtonClicked();
+	void onSkipButtonClicked();
+	void onStopButtonClicked();
+	void onShuffleButtonClicked();
+	void onPositionSliderSliderMoved(int position);
 	void updatePosition(int position);
 	void updateDuration(int duration);
-	void on_addSongButton_clicked();
-	void on_removeSongButton_clicked();
-	void on_advancedSettingsButton_clicked();
+	void onAddSongButtonClicked();
+	void onRemoveSongButtonClicked();
+	void onAdvancedSettingsButtonClicked();
 
-	void on_songListView_doubleClicked(const QModelIndex &index);
+	void onSongListViewDoubleClicked(const QModelIndex &index);
 
 	void songGenerated(const SongItem& song);
 	void generationCanceld(const SongItem& song);
@@ -88,10 +88,10 @@ private slots:
 	void updatePlaybackStatus(bool playing);
 	void generationError(const QString &error);
 
-	void on_actionSavePlaylist();
-	void on_actionLoadPlaylist();
-	void on_actionAppendPlaylist();
-	void on_actionSaveSong();
+	void onActionSavePlaylist();
+	void onActionLoadPlaylist();
+	void onActionAppendPlaylist();
+	void onActionSaveSong();
 
 private:
 	void loadSettings();

@@ -49,11 +49,18 @@ MainWindow::MainWindow(QWidget *parent)
 	autoLoadPlaylist();
 
 	// Connect signals and slots
-	connect(ui->actionAdvancedSettings, &QAction::triggered, this, &MainWindow::on_advancedSettingsButton_clicked);
-	connect(ui->actionSavePlaylist, &QAction::triggered, this, &MainWindow::on_actionSavePlaylist);
-	connect(ui->actionLoadPlaylist, &QAction::triggered, this, &MainWindow::on_actionLoadPlaylist);
-	connect(ui->actionAppendPlaylist, &QAction::triggered, this, &MainWindow::on_actionAppendPlaylist);
-	connect(ui->actionSaveSong, &QAction::triggered, this, &MainWindow::on_actionSaveSong);
+	connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::onPlayButtonClicked);
+	connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::onPauseButtonClicked);
+	connect(ui->skipButton, &QPushButton::clicked, this, &MainWindow::onSkipButtonClicked);
+	connect(ui->stopButton, &QPushButton::clicked, this, &MainWindow::onStopButtonClicked);
+	connect(ui->shuffleButton, &QPushButton::clicked, this, &MainWindow::onShuffleButtonClicked);
+	connect(ui->addSongButton, &QPushButton::clicked, this, &MainWindow::onAddSongButtonClicked);
+	connect(ui->removeSongButton, &QPushButton::clicked, this, &MainWindow::onRemoveSongButtonClicked);
+	connect(ui->actionAdvancedSettings, &QAction::triggered, this, &MainWindow::onAdvancedSettingsButtonClicked);
+	connect(ui->actionSavePlaylist, &QAction::triggered, this, &MainWindow::onActionSavePlaylist);
+	connect(ui->actionLoadPlaylist, &QAction::triggered, this, &MainWindow::onActionLoadPlaylist);
+	connect(ui->actionAppendPlaylist, &QAction::triggered, this, &MainWindow::onActionAppendPlaylist);
+	connect(ui->actionSaveSong, &QAction::triggered, this, &MainWindow::onActionSaveSong);
 	connect(ui->actionQuit, &QAction::triggered, this, [this]()
 	{
 		close();
@@ -72,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(aceStep, &AceStepWorker::progressUpdate, ui->progressBar, &QProgressBar::setValue);
 
 	// Connect double-click on song list for editing (works with QTableView too)
-	connect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
+	connect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::onSongListViewDoubleClicked);
 
 	// Connect audio player error signal
 	connect(audioPlayer, &AudioPlayer::playbackError, this, [this](const QString &error)
@@ -241,7 +248,7 @@ void MainWindow::updateControls()
 	ui->removeSongButton->setEnabled(hasSongs && ui->songListView->currentIndex().isValid());
 }
 
-void MainWindow::on_playButton_clicked()
+void MainWindow::onPlayButtonClicked()
 {
 	if (isPaused)
 	{
@@ -262,7 +269,7 @@ void MainWindow::on_playButton_clicked()
 	updateControls();
 }
 
-void MainWindow::on_pauseButton_clicked()
+void MainWindow::onPauseButtonClicked()
 {
 	if (isPlaying && !isPaused && audioPlayer->isPlaying())
 	{
@@ -273,7 +280,7 @@ void MainWindow::on_pauseButton_clicked()
 	}
 }
 
-void MainWindow::on_skipButton_clicked()
+void MainWindow::onSkipButtonClicked()
 {
 	if (isPlaying)
 	{
@@ -283,7 +290,7 @@ void MainWindow::on_skipButton_clicked()
 	}
 }
 
-void MainWindow::on_stopButton_clicked()
+void MainWindow::onStopButtonClicked()
 {
 	if (isPlaying)
 	{
@@ -297,7 +304,7 @@ void MainWindow::on_stopButton_clicked()
 	}
 }
 
-void MainWindow::on_shuffleButton_clicked()
+void MainWindow::onShuffleButtonClicked()
 {
 	shuffleMode = ui->shuffleButton->isChecked();
 	updateControls();
@@ -307,7 +314,7 @@ void MainWindow::on_shuffleButton_clicked()
 		ensureSongsInQueue();
 }
 
-void MainWindow::on_addSongButton_clicked()
+void MainWindow::onAddSongButtonClicked()
 {
 	SongDialog dialog(this);
 
@@ -322,12 +329,12 @@ void MainWindow::on_addSongButton_clicked()
 	}
 }
 
-void MainWindow::on_songListView_doubleClicked(const QModelIndex &index)
+void MainWindow::onSongListViewDoubleClicked(const QModelIndex &index)
 {
 	if (!index.isValid())
 		return;
 
-	disconnect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
+	disconnect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::onSongListViewDoubleClicked);
 
 	int row = index.row();
 
@@ -359,10 +366,10 @@ void MainWindow::on_songListView_doubleClicked(const QModelIndex &index)
 			songModel->updateSong(songModel->index(row, 1), dialog.getSong());
 	}
 
-	connect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
+	connect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::onSongListViewDoubleClicked);
 }
 
-void MainWindow::on_removeSongButton_clicked()
+void MainWindow::onRemoveSongButtonClicked()
 {
 	QModelIndex currentIndex = ui->songListView->currentIndex();
 	if (!currentIndex.isValid())
@@ -382,7 +389,7 @@ void MainWindow::on_removeSongButton_clicked()
 	}
 }
 
-void MainWindow::on_advancedSettingsButton_clicked()
+void MainWindow::onAdvancedSettingsButtonClicked()
 {
 	AdvancedSettingsDialog dialog(this);
 
@@ -532,7 +539,7 @@ void MainWindow::updatePlaybackStatus(bool playing)
 	updateControls();
 }
 
-void MainWindow::on_positionSlider_sliderMoved(int position)
+void MainWindow::onPositionSliderSliderMoved(int position)
 {
 	if (isPlaying && audioPlayer->isPlaying())
 	{
@@ -582,7 +589,7 @@ void MainWindow::flushGenerationQueue()
 }
 
 // Playlist save/load methods
-void MainWindow::on_actionSavePlaylist()
+void MainWindow::onActionSavePlaylist()
 {
 	QString filePath = QFileDialog::getSaveFileName(this, "Save Playlist",
 	                   QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/playlist.json",
@@ -594,7 +601,7 @@ void MainWindow::on_actionSavePlaylist()
 	}
 }
 
-void MainWindow::on_actionLoadPlaylist()
+void MainWindow::onActionLoadPlaylist()
 {
 	QString filePath = QFileDialog::getOpenFileName(this, "Load Playlist",
 	                   QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
@@ -607,7 +614,7 @@ void MainWindow::on_actionLoadPlaylist()
 	}
 }
 
-void MainWindow::on_actionAppendPlaylist()
+void MainWindow::onActionAppendPlaylist()
 {
 	QString filePath = QFileDialog::getOpenFileName(this, "Load Playlist",
 	                   QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
@@ -618,7 +625,7 @@ void MainWindow::on_actionAppendPlaylist()
 	}
 }
 
-void MainWindow::on_actionSaveSong()
+void MainWindow::onActionSaveSong()
 {
 	QString filePath = QFileDialog::getSaveFileName(this, "Save Playlist",
 	                   QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/song.json",

@@ -12,6 +12,10 @@ SongDialog::SongDialog(QWidget *parent, const SongItem &song)
 {
 	ui->setupUi(this);
 
+	// Connect signals and slots explicitly
+	connect(ui->okButton, &QPushButton::clicked, this, &SongDialog::onOkButtonClicked);
+	connect(ui->cancelButton, &QPushButton::clicked, this, &SongDialog::onCancelButtonClicked);
+
 	ui->captionEdit->setPlainText(song.caption);
 	ui->lyricsEdit->setPlainText(song.lyrics);
 	ui->checkBoxEnhanceCaption->setChecked(song.cotCaption);
@@ -140,7 +144,7 @@ SongDialog::~SongDialog()
 	delete ui;
 }
 
-void SongDialog::on_okButton_clicked()
+void SongDialog::onOkButtonClicked()
 {
 	// Validate that caption is not empty
 	QString caption = ui->captionEdit->toPlainText();
@@ -153,7 +157,7 @@ void SongDialog::on_okButton_clicked()
 	accept();
 }
 
-void SongDialog::on_cancelButton_clicked()
+void SongDialog::onCancelButtonClicked()
 {
 	reject();
 }

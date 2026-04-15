@@ -41,10 +41,10 @@ public:
 	void setFlashAttention(bool enabled);
 
 private slots:
-	void on_qwen3BrowseButton_clicked();
-	void on_textEncoderBrowseButton_clicked();
-	void on_ditBrowseButton_clicked();
-	void on_vaeBrowseButton_clicked();
+	void onQwen3BrowseButtonClicked();
+	void onTextEncoderBrowseButtonClicked();
+	void onDiTBrowseButtonClicked();
+	void onVAEBrowseButtonClicked();
 
 private:
 	Ui::AdvancedSettingsDialog *ui;

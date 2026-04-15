@@ -28,8 +28,8 @@ public:
 	const SongItem& getSong();
 
 private slots:
-	void on_okButton_clicked();
-	void on_cancelButton_clicked();
+	void onOkButtonClicked();
+	void onCancelButtonClicked();
 
 private:
 	Ui::SongDialog *ui;

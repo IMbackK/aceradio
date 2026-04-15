@@ -13,6 +13,12 @@ AdvancedSettingsDialog::AdvancedSettingsDialog(QWidget *parent)
 	  ui(new Ui::AdvancedSettingsDialog)
 {
 	ui->setupUi(this);
+
+	// Connect signals and slots explicitly
+	connect(ui->qwen3BrowseButton, &QPushButton::clicked, this, &AdvancedSettingsDialog::onQwen3BrowseButtonClicked);
+	connect(ui->textEncoderBrowseButton, &QPushButton::clicked, this, &AdvancedSettingsDialog::onTextEncoderBrowseButtonClicked);
+	connect(ui->ditBrowseButton, &QPushButton::clicked, this, &AdvancedSettingsDialog::onDiTBrowseButtonClicked);
+	connect(ui->vaeBrowseButton, &QPushButton::clicked, this, &AdvancedSettingsDialog::onVAEBrowseButtonClicked);
 }
 
 AdvancedSettingsDialog::~AdvancedSettingsDialog()
@@ -90,7 +96,7 @@ void AdvancedSettingsDialog::setFlashAttention(bool enabled)
 	ui->flashAttentionCheckBox->setChecked(enabled);
 }
 
-void AdvancedSettingsDialog::on_qwen3BrowseButton_clicked()
+void AdvancedSettingsDialog::onQwen3BrowseButtonClicked()
 {
 	QString file = QFileDialog::getOpenFileName(this, "Select Qwen3 Model", ui->qwen3ModelEdit->text(),
 	               "GGUF Files (*.gguf)");
@@ -100,7 +106,7 @@ void AdvancedSettingsDialog::on_qwen3BrowseButton_clicked()
 	}
 }
 
-void AdvancedSettingsDialog::on_textEncoderBrowseButton_clicked()
+void AdvancedSettingsDialog::onTextEncoderBrowseButtonClicked()
 {
 	QString file = QFileDialog::getOpenFileName(this, "Select Text Encoder Model", ui->textEncoderEdit->text(),
 	               "GGUF Files (*.gguf)");
@@ -110,7 +116,7 @@ void AdvancedSettingsDialog::on_textEncoderBrowseButton_clicked()
 	}
 }
 
-void AdvancedSettingsDialog::on_ditBrowseButton_clicked()
+void AdvancedSettingsDialog::onDiTBrowseButtonClicked()
 {
 	QString file = QFileDialog::getOpenFileName(this, "Select DiT Model", ui->ditModelEdit->text(), "GGUF Files (*.gguf)");
 	if (!file.isEmpty())
@@ -119,7 +125,7 @@ void AdvancedSettingsDialog::on_ditBrowseButton_clicked()
 	}
 }
 
-void AdvancedSettingsDialog::on_vaeBrowseButton_clicked()
+void AdvancedSettingsDialog::onVAEBrowseButtonClicked()
 {
 	QString file = QFileDialog::getOpenFileName(this, "Select VAE Model", ui->vaeModelEdit->text(), "GGUF Files (*.gguf)");
 	if (!file.isEmpty())
