@@ -120,6 +120,19 @@ int AudioPlayer::position() const
 	return mediaPlayer->position();
 }
 
+void AudioPlayer::setVolume(int volume)
+{
+	// Convert from 0-100 range to 0.0-1.0 range
+	qreal volumeLevel = static_cast<qreal>(volume) / 100.0;
+	audioOutput->setVolume(volumeLevel);
+}
+
+int AudioPlayer::getVolume() const
+{
+	// Convert from 0.0-1.0 range to 0-100 range
+	return static_cast<int>(audioOutput->volume() * 100);
+}
+
 void AudioPlayer::handlePlaybackStateChanged(QMediaPlayer::PlaybackState state)
 {
 	if (state == QMediaPlayer::PlayingState)

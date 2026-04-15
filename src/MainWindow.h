@@ -73,6 +73,7 @@ private slots:
 	void onStopButtonClicked();
 	void onShuffleButtonClicked();
 	void onPositionSliderSliderMoved(int position);
+	void onVolumeSliderValueChanged(int value);
 	void updatePosition(int position);
 	void updateDuration(int duration);
 	void onAddSongButtonClicked();

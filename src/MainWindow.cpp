@@ -54,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->skipButton, &QPushButton::clicked, this, &MainWindow::onSkipButtonClicked);
 	connect(ui->stopButton, &QPushButton::clicked, this, &MainWindow::onStopButtonClicked);
 	connect(ui->shuffleButton, &QPushButton::clicked, this, &MainWindow::onShuffleButtonClicked);
+	connect(ui->volumeSlider, &QSlider::valueChanged, this, &MainWindow::onVolumeSliderValueChanged);
 	connect(ui->addSongButton, &QPushButton::clicked, this, &MainWindow::onAddSongButtonClicked);
 	connect(ui->removeSongButton, &QPushButton::clicked, this, &MainWindow::onRemoveSongButtonClicked);
 	connect(ui->actionAdvancedSettings, &QAction::triggered, this, &MainWindow::onAdvancedSettingsButtonClicked);
@@ -111,6 +112,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 	currentSong = songModel->getSong(0);
 
+	// Set default volume (50% from UI)
+	audioPlayer->setVolume(ui->volumeSlider->value());
+
 	// Start the worker thread and enter its event loop
 	QObject::connect(&aceThread, &QThread::started, [this]() {qDebug() << "Worker thread started";});
 	aceThread.start();
@@ -161,6 +165,10 @@ void MainWindow::loadSettings()
 	shuffleMode = settings.value("shuffleMode", false).toBool();
 	ui->shuffleButton->setChecked(shuffleMode);
 
+	// Load volume setting
+	int savedVolume = settings.value("volume", 50).toInt();
+	ui->volumeSlider->setValue(savedVolume);
+
 	// Load path settings with defaults based on application directory
 	QString appDir = QCoreApplication::applicationDirPath();
 	qwen3ModelPath = settings.value("qwen3ModelPath",
@@ -188,6 +196,9 @@ void MainWindow::saveSettings()
 
 	// Save shuffle mode
 	settings.setValue("shuffleMode", shuffleMode);
+
+	// Save volume setting
+	settings.setValue("volume", ui->volumeSlider->value());
 
 	// Save path settings
 	settings.setValue("qwen3ModelPath", qwen3ModelPath);
@@ -546,6 +557,11 @@ void MainWindow::onPositionSliderSliderMoved(int position)
 	{
 		audioPlayer->setPosition(position);
 	}
+}
+
+void MainWindow::onVolumeSliderValueChanged(int value)
+{
+	audioPlayer->setVolume(value);
 }
 
 void MainWindow::ensureSongsInQueue(bool enqeueCurrent)

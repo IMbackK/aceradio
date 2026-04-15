@@ -32,6 +32,8 @@ public:
 	bool isPlaying() const;
 	int duration() const;
 	int position() const;
+	void setVolume(int volume);
+	int getVolume() const;
 
 signals:
 	void playbackStarted();
