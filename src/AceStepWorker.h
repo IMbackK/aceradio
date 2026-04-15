@@ -54,24 +54,16 @@ private slots:
 	void runGeneration();
 
 private:
-	// Check if cancellation was requested
 	static bool checkCancel(void* data);
 
-	// Load models if not already loaded
 	bool loadModels();
 	void unloadModels();
-
-	// Individual model load/unload for low VRAM mode
 	bool loadLm();
 	void unloadLm();
 	bool loadSynth();
 	void unloadSynth();
 
-	// Convert SongItem to AceRequest
 	AceRequest songToRequest(const SongItem& song, const QString& templateJson);
-
-	// Convert AceRequest back to SongItem
-	SongItem requestToSong(const AceRequest& req, const QString& json);
 
 	static std::shared_ptr<QByteArray> convertToWav(const AceAudio& audio);
 
