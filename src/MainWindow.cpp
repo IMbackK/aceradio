@@ -155,6 +155,10 @@ void MainWindow::loadSettings()
 	                                      appDir + "/acestep.cpp/models/Qwen3-Embedding-0.6B-BF16.gguf").toString();
 	ditModelPath = settings.value("ditModelPath", appDir + "/acestep.cpp/models/acestep-v15-turbo-Q8_0.gguf").toString();
 	vaeModelPath = settings.value("vaeModelPath", appDir + "/acestep.cpp/models/vae-BF16.gguf").toString();
+
+	// Load low VRAM mode
+	bool lowVram = settings.value("lowVramMode", false).toBool();
+	aceStep->setLowVramMode(lowVram);
 }
 
 void MainWindow::saveSettings()
@@ -173,6 +177,9 @@ void MainWindow::saveSettings()
 	settings.setValue("textEncoderModelPath", textEncoderModelPath);
 	settings.setValue("ditModelPath", ditModelPath);
 	settings.setValue("vaeModelPath", vaeModelPath);
+
+	// Save low VRAM mode
+	settings.setValue("lowVramMode", aceStep->isLowVramMode());
 
 	settings.setValue("firstRun", false);
 }
@@ -374,6 +381,7 @@ void MainWindow::on_advancedSettingsButton_clicked()
 	dialog.setTextEncoderModelPath(textEncoderModelPath);
 	dialog.setDiTModelPath(ditModelPath);
 	dialog.setVAEModelPath(vaeModelPath);
+	dialog.setLowVramMode(aceStep->isLowVramMode());
 
 	if (dialog.exec() == QDialog::Accepted)
 	{
@@ -396,6 +404,9 @@ void MainWindow::on_advancedSettingsButton_clicked()
 
 		// Update model paths for acestep.cpp
 		aceStep->setModelPaths(qwen3ModelPath, textEncoderModelPath, ditModelPath, vaeModelPath);
+
+		// Update low VRAM mode
+		aceStep->setLowVramMode(dialog.getLowVramMode());
 
 		saveSettings();
 	}

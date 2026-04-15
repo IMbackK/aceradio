@@ -29,6 +29,7 @@ public:
 	QString getTextEncoderModelPath() const;
 	QString getDiTModelPath() const;
 	QString getVAEModelPath() const;
+	bool getLowVramMode() const;
 
 	// Setters for settings
 	void setJsonTemplate(const QString &templateStr);
@@ -37,6 +38,7 @@ public:
 	void setTextEncoderModelPath(const QString &path);
 	void setDiTModelPath(const QString &path);
 	void setVAEModelPath(const QString &path);
+	void setLowVramMode(bool enabled);
 
 private slots:
 	void on_aceStepBrowseButton_clicked();

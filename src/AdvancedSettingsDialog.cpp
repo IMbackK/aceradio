@@ -50,6 +50,11 @@ QString AdvancedSettingsDialog::getVAEModelPath() const
 	return ui->vaeModelEdit->text();
 }
 
+bool AdvancedSettingsDialog::getLowVramMode() const
+{
+	return ui->lowVramCheckBox->isChecked();
+}
+
 void AdvancedSettingsDialog::setJsonTemplate(const QString &templateStr)
 {
 	ui->jsonTemplateEdit->setPlainText(templateStr);
@@ -78,6 +83,11 @@ void AdvancedSettingsDialog::setDiTModelPath(const QString &path)
 void AdvancedSettingsDialog::setVAEModelPath(const QString &path)
 {
 	ui->vaeModelEdit->setText(path);
+}
+
+void AdvancedSettingsDialog::setLowVramMode(bool enabled)
+{
+	ui->lowVramCheckBox->setChecked(enabled);
 }
 
 void AdvancedSettingsDialog::on_aceStepBrowseButton_clicked()

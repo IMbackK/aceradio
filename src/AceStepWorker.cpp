@@ -28,6 +28,10 @@ AceStepWorker::~AceStepWorker()
 
 void AceStepWorker::setModelPaths(QString lmPath, QString textEncoderPath, QString ditPath, QString vaePath)
 {
+	// Check if paths actually changed
+	bool pathsChanged = (m_lmModelPath != lmPath || m_textEncoderPath != textEncoderPath ||
+						m_ditPath != ditPath || m_vaePath != vaePath);
+	
 	m_lmModelPath = lmPath;
 	m_textEncoderPath = textEncoderPath;
 	m_ditPath = ditPath;
@@ -38,6 +42,17 @@ void AceStepWorker::setModelPaths(QString lmPath, QString textEncoderPath, QStri
 	m_textEncoderPathBytes = textEncoderPath.toUtf8();
 	m_ditPathBytes = ditPath.toUtf8();
 	m_vaePathBytes = vaePath.toUtf8();
+	
+	// If paths changed and models are loaded, unload them so they'll be reloaded with new paths
+	if (pathsChanged && m_modelsLoaded.load())
+	{
+		unloadModels();
+	}
+}
+
+void AceStepWorker::setLowVramMode(bool enabled)
+{
+	m_lowVramMode = enabled;
 }
 
 bool AceStepWorker::isGenerating(SongItem* song)
@@ -124,139 +139,295 @@ bool AceStepWorker::checkCancel(void* data)
 
 void AceStepWorker::runGeneration()
 {
-	// Load models if needed
-	if (!loadModels())
-	{
-		m_busy.store(false);
-		return;
-	}
-
 	// Convert SongItem to AceRequest
 	AceRequest req = songToRequest(m_currentSong, m_requestTemplate);
-
-	// Step 1: LM generates lyrics and audio codes
-	emit progressUpdate(30);
-
 	AceRequest lmOutput;
 	request_init(&lmOutput);
 
-	int lmResult = ace_lm_generate(m_lmContext, &req, 1, &lmOutput,
-									nullptr, nullptr,
-									checkCancel, this,
-									LM_MODE_GENERATE);
-
-	if (m_cancelRequested.load())
+	if (m_lowVramMode)
 	{
-		emit generationCanceled(m_currentSong);
+		// Low VRAM mode: load LM → run LM → unload LM → load Synth → run Synth → unload Synth
+
+		// Step 1: Load LM and generate
+		emit progressUpdate(10);
+
+		if (!loadLm())
+		{
+			m_busy.store(false);
+			return;
+		}
+
+		emit progressUpdate(30);
+
+		int lmResult = ace_lm_generate(m_lmContext, &req, 1, &lmOutput,
+										nullptr, nullptr,
+										checkCancel, this,
+										LM_MODE_GENERATE);
+
+		if (m_cancelRequested.load())
+		{
+			unloadLm();
+			emit generationCanceled(m_currentSong);
+			m_busy.store(false);
+			return;
+		}
+
+		if (lmResult != 0)
+		{
+			unloadLm();
+			emit generationError("LM generation failed or was canceled");
+			m_busy.store(false);
+			return;
+		}
+
+		// Update song with generated lyrics
+		m_currentSong.lyrics = QString::fromStdString(lmOutput.lyrics);
+
+		// Unload LM to free VRAM
+		unloadLm();
+
+		// Step 2: Load Synth and generate audio
+		emit progressUpdate(50);
+
+		if (!loadSynth())
+		{
+			m_busy.store(false);
+			return;
+		}
+
+		emit progressUpdate(60);
+
+		AceAudio outputAudio;
+		outputAudio.samples = nullptr;
+		outputAudio.n_samples = 0;
+		outputAudio.sample_rate = 48000;
+
+		int synthResult = ace_synth_generate(m_synthContext, &lmOutput,
+											  nullptr, 0,  // no source audio
+											  nullptr, 0,  // no reference audio
+											  1, &outputAudio,
+											  checkCancel, this);
+
+		// Unload Synth to free VRAM
+		unloadSynth();
+
+		if (m_cancelRequested.load())
+		{
+			emit generationCanceled(m_currentSong);
+			m_busy.store(false);
+			return;
+		}
+
+		if (synthResult != 0)
+		{
+			emit generationError("Synthesis failed or was canceled");
+			m_busy.store(false);
+			return;
+		}
+
+		// Store audio in memory as WAV
+		auto audioData = std::make_shared<QByteArray>();
+
+		// Simple WAV header + stereo float data
+		int numChannels = 2;
+		int bitsPerSample = 16;
+		int byteRate = outputAudio.sample_rate * numChannels * (bitsPerSample / 8);
+		int blockAlign = numChannels * (bitsPerSample / 8);
+		int dataSize = outputAudio.n_samples * numChannels * (bitsPerSample / 8);
+
+		// RIFF header
+		audioData->append("RIFF");
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&dataSize), 4));
+		audioData->append("WAVE");
+
+		// fmt chunk
+		audioData->append("fmt ");
+		int fmtSize = 16;
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&fmtSize), 4));
+		short audioFormat = 1;  // PCM
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&audioFormat), 2));
+		short numCh = numChannels;
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&numCh), 2));
+		int sampleRate = outputAudio.sample_rate;
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&sampleRate), 4));
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&byteRate), 4));
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&blockAlign), 2));
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&bitsPerSample), 2));
+
+		// data chunk
+		audioData->append("data");
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&dataSize), 4));
+
+		// Convert float samples to 16-bit and write
+		QVector<short> interleaved(outputAudio.n_samples * numChannels);
+		for (int i = 0; i < outputAudio.n_samples; i++)
+		{
+			float left = outputAudio.samples[i];
+			float right = outputAudio.samples[i + outputAudio.n_samples];
+			// Clamp and convert to 16-bit
+			left = std::max(-1.0f, std::min(1.0f, left));
+			right = std::max(-1.0f, std::min(1.0f, right));
+			interleaved[i * 2] = static_cast<short>(left * 32767.0f);
+			interleaved[i * 2 + 1] = static_cast<short>(right * 32767.0f);
+		}
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(interleaved.data()), dataSize));
+
+		// Free audio buffer
+		ace_audio_free(&outputAudio);
+
+		// Store the JSON with all generated fields
+		m_currentSong.json = QString::fromStdString(request_to_json(&lmOutput, true));
+		m_currentSong.audioData = audioData;
+
+		// Extract BPM if available
+		if (lmOutput.bpm > 0)
+			m_currentSong.bpm = lmOutput.bpm;
+
+		// Extract key if available
+		if (!lmOutput.keyscale.empty())
+			m_currentSong.key = QString::fromStdString(lmOutput.keyscale);
+
+		emit progressUpdate(100);
+		emit songGenerated(m_currentSong);
+
 		m_busy.store(false);
-		return;
 	}
-
-	if (lmResult != 0)
+	else
 	{
-		emit generationError("LM generation failed or was canceled");
+		// Normal mode: load all models at start, unload at end
+
+		// Load models if needed
+		if (!loadModels())
+		{
+			m_busy.store(false);
+			return;
+		}
+
+		// Step 1: LM generates lyrics and audio codes
+		emit progressUpdate(30);
+
+		int lmResult = ace_lm_generate(m_lmContext, &req, 1, &lmOutput,
+										nullptr, nullptr,
+										checkCancel, this,
+										LM_MODE_GENERATE);
+
+		if (m_cancelRequested.load())
+		{
+			emit generationCanceled(m_currentSong);
+			unloadModels();
+			m_busy.store(false);
+			return;
+		}
+
+		if (lmResult != 0)
+		{
+			emit generationError("LM generation failed or was canceled");
+			unloadModels();
+			m_busy.store(false);
+			return;
+		}
+
+		// Update song with generated lyrics
+		m_currentSong.lyrics = QString::fromStdString(lmOutput.lyrics);
+
+		// Step 2: Synth generates audio
+		emit progressUpdate(60);
+
+		AceAudio outputAudio;
+		outputAudio.samples = nullptr;
+		outputAudio.n_samples = 0;
+		outputAudio.sample_rate = 48000;
+
+		int synthResult = ace_synth_generate(m_synthContext, &lmOutput,
+											  nullptr, 0,  // no source audio
+											  nullptr, 0,  // no reference audio
+											  1, &outputAudio,
+											  checkCancel, this);
+
+		if (m_cancelRequested.load())
+		{
+			emit generationCanceled(m_currentSong);
+			unloadModels();
+			m_busy.store(false);
+			return;
+		}
+
+		if (synthResult != 0)
+		{
+			emit generationError("Synthesis failed or was canceled");
+			unloadModels();
+			m_busy.store(false);
+			return;
+		}
+
+		// Store audio in memory as WAV
+		auto audioData = std::make_shared<QByteArray>();
+
+		// Simple WAV header + stereo float data
+		int numChannels = 2;
+		int bitsPerSample = 16;
+		int byteRate = outputAudio.sample_rate * numChannels * (bitsPerSample / 8);
+		int blockAlign = numChannels * (bitsPerSample / 8);
+		int dataSize = outputAudio.n_samples * numChannels * (bitsPerSample / 8);
+
+		// RIFF header
+		audioData->append("RIFF");
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&dataSize), 4));
+		audioData->append("WAVE");
+
+		// fmt chunk
+		audioData->append("fmt ");
+		int fmtSize = 16;
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&fmtSize), 4));
+		short audioFormat = 1;  // PCM
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&audioFormat), 2));
+		short numCh = numChannels;
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&numCh), 2));
+		int sampleRate = outputAudio.sample_rate;
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&sampleRate), 4));
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&byteRate), 4));
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&blockAlign), 2));
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&bitsPerSample), 2));
+
+		// data chunk
+		audioData->append("data");
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&dataSize), 4));
+
+		// Convert float samples to 16-bit and write
+		QVector<short> interleaved(outputAudio.n_samples * numChannels);
+		for (int i = 0; i < outputAudio.n_samples; i++)
+		{
+			float left = outputAudio.samples[i];
+			float right = outputAudio.samples[i + outputAudio.n_samples];
+			// Clamp and convert to 16-bit
+			left = std::max(-1.0f, std::min(1.0f, left));
+			right = std::max(-1.0f, std::min(1.0f, right));
+			interleaved[i * 2] = static_cast<short>(left * 32767.0f);
+			interleaved[i * 2 + 1] = static_cast<short>(right * 32767.0f);
+		}
+		audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(interleaved.data()), dataSize));
+
+		// Free audio buffer
+		ace_audio_free(&outputAudio);
+
+		// Store the JSON with all generated fields
+		m_currentSong.json = QString::fromStdString(request_to_json(&lmOutput, true));
+		m_currentSong.audioData = audioData;
+
+		// Extract BPM if available
+		if (lmOutput.bpm > 0)
+			m_currentSong.bpm = lmOutput.bpm;
+
+		// Extract key if available
+		if (!lmOutput.keyscale.empty())
+			m_currentSong.key = QString::fromStdString(lmOutput.keyscale);
+
+		emit progressUpdate(100);
+		emit songGenerated(m_currentSong);
+
+		// Keep models loaded for next generation (normal mode)
 		m_busy.store(false);
-		return;
 	}
-
-	// Update song with generated lyrics
-	m_currentSong.lyrics = QString::fromStdString(lmOutput.lyrics);
-
-	// Step 2: Synth generates audio
-	emit progressUpdate(60);
-
-	AceAudio* audioOut = nullptr;
-	AceAudio outputAudio;
-	outputAudio.samples = nullptr;
-	outputAudio.n_samples = 0;
-	outputAudio.sample_rate = 48000;
-
-	int synthResult = ace_synth_generate(m_synthContext, &lmOutput,
-										  nullptr, 0,  // no source audio
-										  nullptr, 0,  // no reference audio
-										  1, &outputAudio,
-										  checkCancel, this);
-
-	if (m_cancelRequested.load())
-	{
-		emit generationCanceled(m_currentSong);
-		m_busy.store(false);
-		return;
-	}
-
-	if (synthResult != 0)
-	{
-		emit generationError("Synthesis failed or was canceled");
-		m_busy.store(false);
-		return;
-	}
-
-	// Store audio in memory as WAV
-	auto audioData = std::make_shared<QByteArray>();
-
-	// Simple WAV header + stereo float data
-	int numChannels = 2;
-	int bitsPerSample = 16;
-	int byteRate = outputAudio.sample_rate * numChannels * (bitsPerSample / 8);
-	int blockAlign = numChannels * (bitsPerSample / 8);
-	int dataSize = outputAudio.n_samples * numChannels * (bitsPerSample / 8);
-
-	// RIFF header
-	audioData->append("RIFF");
-	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&dataSize), 4));
-	audioData->append("WAVE");
-
-	// fmt chunk
-	audioData->append("fmt ");
-	int fmtSize = 16;
-	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&fmtSize), 4));
-	short audioFormat = 1;  // PCM
-	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&audioFormat), 2));
-	short numCh = numChannels;
-	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&numCh), 2));
-	int sampleRate = outputAudio.sample_rate;
-	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&sampleRate), 4));
-	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&byteRate), 4));
-	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&blockAlign), 2));
-	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&bitsPerSample), 2));
-
-	// data chunk
-	audioData->append("data");
-	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&dataSize), 4));
-
-	// Convert float samples to 16-bit and write
-	QVector<short> interleaved(outputAudio.n_samples * numChannels);
-	for (int i = 0; i < outputAudio.n_samples; i++)
-	{
-		float left = outputAudio.samples[i];
-		float right = outputAudio.samples[i + outputAudio.n_samples];
-		// Clamp and convert to 16-bit
-		left = std::max(-1.0f, std::min(1.0f, left));
-		right = std::max(-1.0f, std::min(1.0f, right));
-		interleaved[i * 2] = static_cast<short>(left * 32767.0f);
-		interleaved[i * 2 + 1] = static_cast<short>(right * 32767.0f);
-	}
-	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(interleaved.data()), dataSize));
-
-	// Free audio buffer
-	ace_audio_free(&outputAudio);
-
-	// Store the JSON with all generated fields
-	m_currentSong.json = QString::fromStdString(request_to_json(&lmOutput, true));
-	m_currentSong.audioData = audioData;
-
-	// Extract BPM if available
-	if (lmOutput.bpm > 0)
-		m_currentSong.bpm = lmOutput.bpm;
-
-	// Extract key if available
-	if (!lmOutput.keyscale.empty())
-		m_currentSong.key = QString::fromStdString(lmOutput.keyscale);
-
-	emit progressUpdate(100);
-	emit songGenerated(m_currentSong);
-
-	m_busy.store(false);
 }
 
 bool AceStepWorker::loadModels()
@@ -312,6 +483,65 @@ void AceStepWorker::unloadModels()
 		m_lmContext = nullptr;
 	}
 	m_modelsLoaded.store(false);
+}
+
+bool AceStepWorker::loadLm()
+{
+	if (m_lmContext)
+		return true;
+
+	AceLmParams lmParams;
+	ace_lm_default_params(&lmParams);
+	lmParams.model_path = m_lmModelPathBytes.constData();
+	lmParams.use_fsm = true;
+	lmParams.use_fa = true;
+
+	m_lmContext = ace_lm_load(&lmParams);
+	if (!m_lmContext)
+	{
+		emit generationError("Failed to load LM model: " + m_lmModelPath);
+		return false;
+	}
+	return true;
+}
+
+void AceStepWorker::unloadLm()
+{
+	if (m_lmContext)
+	{
+		ace_lm_free(m_lmContext);
+		m_lmContext = nullptr;
+	}
+}
+
+bool AceStepWorker::loadSynth()
+{
+	if (m_synthContext)
+		return true;
+
+	AceSynthParams synthParams;
+	ace_synth_default_params(&synthParams);
+	synthParams.text_encoder_path = m_textEncoderPathBytes.constData();
+	synthParams.dit_path = m_ditPathBytes.constData();
+	synthParams.vae_path = m_vaePathBytes.constData();
+	synthParams.use_fa = true;
+
+	m_synthContext = ace_synth_load(&synthParams);
+	if (!m_synthContext)
+	{
+		emit generationError("Failed to load synthesis models");
+		return false;
+	}
+	return true;
+}
+
+void AceStepWorker::unloadSynth()
+{
+	if (m_synthContext)
+	{
+		ace_synth_free(m_synthContext);
+		m_synthContext = nullptr;
+	}
 }
 
 AceRequest AceStepWorker::songToRequest(const SongItem& song, const QString& templateJson)

@@ -19,6 +19,43 @@
 					                                                     <property name="currentIndex">
 					                                                         <number>0</number>
 					                                                         </property>
+					<widget class="QWidget" name="performanceTab">
+						                                                             <attribute name="title">
+						                                                                 <string>Performance</string>
+						                                                                 </attribute>
+						<layout class="QVBoxLayout" name="performanceLayout">
+							                                                                     <item>
+							<widget class="QCheckBox" name="lowVramCheckBox">
+								                                                                         <property name="text">
+								                                                                             <string>Low VRAM Mode</string>
+								                                                                         </property>
+								                                                                         </widget>
+								                                                                         </item>
+								<item>
+							<widget class="QLabel" name="lowVramLabel">
+								                                                                         <property name="text">
+								                                                                             <string>Unload models between generation phases to save VRAM. Slower but uses less memory.</string>
+								                                                                         </property>
+								                                                                         <property name="wordWrap">
+								                                                                                 <bool>true</bool>
+								                                                                         </property>
+								                                                                         </widget>
+								                                                                         </item>
+								<item>
+							<spacer name="verticalSpacer">
+							                                 <property name="orientation">
+							                                     <enum>Qt::Vertical</enum>
+							                                 </property>
+							                                 <property name="sizeHint" stdset="0">
+							                                     <size>
+							                                         <width>20</width>
+							                                         <height>40</height>
+							                                     </size>
+							                                 </property>
+							                             </spacer>
+							                             </item>
+							                             </layout>
+							                             </widget>
 					<widget class="QWidget" name="jsonTab">
 						                                                             <attribute name="title">
 						                                                                 <string>JSON Template</string>

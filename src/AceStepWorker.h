@@ -34,6 +34,10 @@ public:
 	// Model paths - set these before first generation
 	void setModelPaths(QString lmPath, QString textEncoderPath, QString ditPath, QString vaePath);
 
+	// Low VRAM mode: unload models between phases to save VRAM
+	void setLowVramMode(bool enabled);
+	bool isLowVramMode() const { return m_lowVramMode; }
+
 	// Request a new song generation
 	bool requestGeneration(SongItem song, QString requestTemplate);
 
@@ -54,6 +58,12 @@ private:
 	bool loadModels();
 	void unloadModels();
 
+	// Individual model load/unload for low VRAM mode
+	bool loadLm();
+	void unloadLm();
+	bool loadSynth();
+	void unloadSynth();
+
 	// Convert SongItem to AceRequest
 	AceRequest songToRequest(const SongItem& song, const QString& templateJson);
 
@@ -64,6 +74,7 @@ private:
 	std::atomic<bool> m_busy{false};
 	std::atomic<bool> m_cancelRequested{false};
 	std::atomic<bool> m_modelsLoaded{false};
+	bool m_lowVramMode = false;
 
 	// Current request data
 	SongItem m_currentSong;
