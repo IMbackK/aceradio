@@ -578,7 +578,7 @@ void MainWindow::ensureSongsInQueue(bool enqeueCurrent)
 	isGeneratingNext = true;
 
 	ui->statusbar->showMessage("Generateing: "+nextSong.caption);
-	QMetaObject::invokeMethod(aceStep, &AceStepWorker::requestGeneration, Qt::QueuedConnection, nextSong, jsonTemplate);
+	aceStep->requestGeneration(nextSong, jsonTemplate);
 }
 
 void MainWindow::flushGenerationQueue()

@@ -120,7 +120,7 @@ bool AceStepWorker::requestGeneration(SongItem song, QString requestTemplate)
 	}
 
 	// Run generation in the worker thread
-	QMetaObject::invokeMethod(this, &AceStepWorker::runGeneration, Qt::QueuedConnection);
+	QMetaObject::invokeMethod(this, "runGeneration", Qt::QueuedConnection);
 	return true;
 }
 
