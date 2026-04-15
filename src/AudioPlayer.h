@@ -14,6 +14,7 @@
 #include <QMediaDevices>
 #include <QAudioDevice>
 #include <QTimer>
+#include <memory>
 
 class AudioPlayer : public QObject
 {
@@ -23,6 +24,7 @@ public:
 	~AudioPlayer();
 
 	void play(const QString &filePath);
+	void play(std::shared_ptr<QByteArray> audioData);
 	void play();
 	void stop();
 	void pause();

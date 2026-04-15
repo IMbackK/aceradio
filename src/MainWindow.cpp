@@ -409,7 +409,14 @@ void MainWindow::playbackStarted()
 void MainWindow::playSong(const SongItem& song)
 {
 	currentSong = song;
-	audioPlayer->play(song.file);
+	if (song.audioData)
+	{
+		audioPlayer->play(song.audioData);
+	}
+	else if (!song.file.isEmpty())
+	{
+		audioPlayer->play(song.file);
+	}
 	songModel->setPlayingIndex(songModel->findSongIndexById(song.uniqueId));
 	ui->nowPlayingLabel->setText("Now Playing: " + song.caption);
 	ui->lyricsTextEdit->setPlainText(song.lyrics);
@@ -610,7 +617,22 @@ void MainWindow::on_actionSaveSong()
 		QFile file(filePath);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
 			return;
-		QFile::copy(currentSong.file, filePath + ".wav");
+
+		// Save audio from memory if available, otherwise fall back to file
+		if (currentSong.audioData)
+		{
+			QFile wavFile(filePath + ".wav");
+			if (wavFile.open(QIODevice::WriteOnly))
+			{
+				wavFile.write(*currentSong.audioData);
+				wavFile.close();
+			}
+		}
+		else if (!currentSong.file.isEmpty())
+		{
+			QFile::copy(currentSong.file, filePath + ".wav");
+		}
+
 		file.write(jsonData);
 		file.close();
 	}

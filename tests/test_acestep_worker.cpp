@@ -274,13 +274,12 @@ TEST(generateSong)
     loop.exec();
     
     ASSERT_TRUE(generationCompleted);
-    ASSERT_TRUE(!resultSong.file.isEmpty());
-    ASSERT_TRUE(QFileInfo::exists(resultSong.file));
+    ASSERT_TRUE(resultSong.audioData != nullptr);
+    ASSERT_TRUE(!resultSong.audioData->isEmpty());
     
-    // Check file is not empty
-    QFileInfo fileInfo(resultSong.file);
-    std::cout << "    File size: " << fileInfo.size() << " bytes" << std::endl;
-    ASSERT_TRUE(fileInfo.size() > 1000); // Should be at least 1KB for valid audio
+    // Check audio data is not empty
+    std::cout << "    Audio data size: " << resultSong.audioData->size() << " bytes" << std::endl;
+    ASSERT_TRUE(resultSong.audioData->size() > 1000); // Should be at least 1KB for valid audio
 }
 
 // Test 11: Test cancellation

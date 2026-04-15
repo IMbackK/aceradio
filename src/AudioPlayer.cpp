@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "AudioPlayer.h"
+#include <QBuffer>
 #include <QDebug>
 
 AudioPlayer::AudioPlayer(QObject *parent)
@@ -42,6 +43,33 @@ void AudioPlayer::play(const QString &filePath)
 	}
 
 	mediaPlayer->setSource(QUrl::fromLocalFile(filePath));
+	mediaPlayer->play();
+
+	// Start position timer
+	positionTimer->start();
+}
+
+void AudioPlayer::play(std::shared_ptr<QByteArray> audioData)
+{
+	if (isPlaying())
+	{
+		stop();
+	}
+
+	if (!audioData || audioData->isEmpty())
+	{
+		emit playbackError("No audio data available");
+		return;
+	}
+
+	// Create a buffer with the audio data
+	QBuffer *buffer = new QBuffer();
+	buffer->setData(*audioData);
+	buffer->open(QIODevice::ReadOnly);
+	buffer->setParent(this);
+
+	// Use QMediaPlayer::setSourceDevice for in-memory playback
+	mediaPlayer->setSourceDevice(buffer, QUrl("memory://audio.wav"));
 	mediaPlayer->play();
 
 	// Start position timer

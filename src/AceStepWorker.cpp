@@ -191,18 +191,8 @@ void AceStepWorker::runGeneration()
 		return;
 	}
 
-	// Save audio to file
-	QString wavFile = m_tempDir + "/request_" + QString::number(m_uid) + ".wav";
-
-	// Write WAV file
-	QFile outFile(wavFile);
-	if (!outFile.open(QIODevice::WriteOnly))
-	{
-		emit generationError("Failed to create output file: " + outFile.errorString());
-		ace_audio_free(&outputAudio);
-		m_busy.store(false);
-		return;
-	}
+	// Store audio in memory as WAV
+	auto audioData = std::make_shared<QByteArray>();
 
 	// Simple WAV header + stereo float data
 	int numChannels = 2;
@@ -212,27 +202,27 @@ void AceStepWorker::runGeneration()
 	int dataSize = outputAudio.n_samples * numChannels * (bitsPerSample / 8);
 
 	// RIFF header
-	outFile.write("RIFF");
-	outFile.write(reinterpret_cast<const char*>(&dataSize), 4);
-	outFile.write("WAVE");
+	audioData->append("RIFF");
+	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&dataSize), 4));
+	audioData->append("WAVE");
 
 	// fmt chunk
-	outFile.write("fmt ");
+	audioData->append("fmt ");
 	int fmtSize = 16;
-	outFile.write(reinterpret_cast<const char*>(&fmtSize), 4);
+	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&fmtSize), 4));
 	short audioFormat = 1;  // PCM
-	outFile.write(reinterpret_cast<const char*>(&audioFormat), 2);
+	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&audioFormat), 2));
 	short numCh = numChannels;
-	outFile.write(reinterpret_cast<const char*>(&numCh), 2);
+	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&numCh), 2));
 	int sampleRate = outputAudio.sample_rate;
-	outFile.write(reinterpret_cast<const char*>(&sampleRate), 4);
-	outFile.write(reinterpret_cast<const char*>(&byteRate), 4);
-	outFile.write(reinterpret_cast<const char*>(&blockAlign), 2);
-	outFile.write(reinterpret_cast<const char*>(&bitsPerSample), 2);
+	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&sampleRate), 4));
+	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&byteRate), 4));
+	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&blockAlign), 2));
+	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&bitsPerSample), 2));
 
 	// data chunk
-	outFile.write("data");
-	outFile.write(reinterpret_cast<const char*>(&dataSize), 4);
+	audioData->append("data");
+	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(&dataSize), 4));
 
 	// Convert float samples to 16-bit and write
 	QVector<short> interleaved(outputAudio.n_samples * numChannels);
@@ -246,15 +236,14 @@ void AceStepWorker::runGeneration()
 		interleaved[i * 2] = static_cast<short>(left * 32767.0f);
 		interleaved[i * 2 + 1] = static_cast<short>(right * 32767.0f);
 	}
-	outFile.write(reinterpret_cast<const char*>(interleaved.data()), dataSize);
-	outFile.close();
+	audioData->append(QByteArray::fromRawData(reinterpret_cast<const char*>(interleaved.data()), dataSize));
 
 	// Free audio buffer
 	ace_audio_free(&outputAudio);
 
 	// Store the JSON with all generated fields
 	m_currentSong.json = QString::fromStdString(request_to_json(&lmOutput, true));
-	m_currentSong.file = wavFile;
+	m_currentSong.audioData = audioData;
 
 	// Extract BPM if available
 	if (lmOutput.bpm > 0)

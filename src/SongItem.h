@@ -8,6 +8,7 @@
 #include <QRandomGenerator>
 #include <cstdint>
 #include <QJsonObject>
+#include <memory>
 
 class SongItem
 {
@@ -22,6 +23,7 @@ public:
 	uint64_t uniqueId;
 	QString file;
 	QString json;
+	std::shared_ptr<QByteArray> audioData;
 
 	SongItem(const QString &caption = "", const QString &lyrics = "");
 	SongItem(const QJsonObject& json);
