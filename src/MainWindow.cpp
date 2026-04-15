@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->songListView, &QTableView::doubleClicked, this, &MainWindow::on_songListView_doubleClicked);
 
 	// Connect audio player error signal
-	connect(audioPlayer, &AudioPlayer::playbackError, [this](const QString &error)
+	connect(audioPlayer, &AudioPlayer::playbackError, this, [this](const QString &error)
 	{
 		QMessageBox::warning(this, "Playback Error", "Failed to play audio: " + error);
 	});
