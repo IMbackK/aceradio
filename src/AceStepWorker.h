@@ -13,8 +13,7 @@
 #include <atomic>
 
 #include "SongItem.h"
-
-// acestep.cpp headers
+#include "pipeline-synth.h"
 #include "request.h"
 
 struct AceLm;
@@ -74,6 +73,8 @@ private:
 	// Convert AceRequest back to SongItem
 	SongItem requestToSong(const AceRequest& req, const QString& json);
 
+	static std::shared_ptr<QByteArray> convertToWav(const AceAudio& audio);
+
 	// Generation state
 	std::atomic<bool> m_busy{false};
 	std::atomic<bool> m_cancelRequested{false};
@@ -96,13 +97,10 @@ private:
 	AceLm* m_lmContext = nullptr;
 	AceSynth* m_synthContext = nullptr;
 
-	// Cached model paths as byte arrays (to avoid dangling pointers)
 	QByteArray m_lmModelPathBytes;
 	QByteArray m_textEncoderPathBytes;
 	QByteArray m_ditPathBytes;
 	QByteArray m_vaePathBytes;
-
-	const QString m_tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
 };
 
 #endif // ACESTEPWORKER_H
