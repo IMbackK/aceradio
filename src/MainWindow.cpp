@@ -155,7 +155,6 @@ void MainWindow::loadSettings()
 
 	// Load path settings with defaults based on application directory
 	QString appDir = QCoreApplication::applicationDirPath();
-	aceStepPath = settings.value("aceStepPath", appDir + "/acestep.cpp").toString();
 	qwen3ModelPath = settings.value("qwen3ModelPath",
 	                                appDir + "/acestep.cpp/models/acestep-5Hz-lm-4B-Q8_0.gguf").toString();
 	textEncoderModelPath = settings.value("textEncoderModelPath",
@@ -183,7 +182,6 @@ void MainWindow::saveSettings()
 	settings.setValue("shuffleMode", shuffleMode);
 
 	// Save path settings
-	settings.setValue("aceStepPath", aceStepPath);
 	settings.setValue("qwen3ModelPath", qwen3ModelPath);
 	settings.setValue("textEncoderModelPath", textEncoderModelPath);
 	settings.setValue("ditModelPath", ditModelPath);
@@ -390,7 +388,6 @@ void MainWindow::on_advancedSettingsButton_clicked()
 
 	// Set current values
 	dialog.setJsonTemplate(jsonTemplate);
-	dialog.setAceStepPath(aceStepPath);
 	dialog.setQwen3ModelPath(qwen3ModelPath);
 	dialog.setTextEncoderModelPath(textEncoderModelPath);
 	dialog.setDiTModelPath(ditModelPath);
@@ -411,7 +408,6 @@ void MainWindow::on_advancedSettingsButton_clicked()
 
 		// Update settings
 		jsonTemplate = dialog.getJsonTemplate();
-		aceStepPath = dialog.getAceStepPath();
 		qwen3ModelPath = dialog.getQwen3ModelPath();
 		textEncoderModelPath = dialog.getTextEncoderModelPath();
 		ditModelPath = dialog.getDiTModelPath();

@@ -50,7 +50,6 @@ class MainWindow : public QMainWindow
 	QString jsonTemplate;
 
 	// Path settings
-	QString aceStepPath;
 	QString qwen3ModelPath;
 	QString textEncoderModelPath;
 	QString ditModelPath;

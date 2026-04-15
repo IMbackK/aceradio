@@ -105,34 +105,13 @@
         <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
        </property>
        <item row="0" column="0">
-        <widget class="QLabel" name="aceStepLabel">
-         <property name="text">
-          <string>AceStep Path:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <layout class="QHBoxLayout" name="aceStepLayout">
-         <item>
-          <widget class="QLineEdit" name="aceStepPathEdit"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="aceStepBrowseButton">
-           <property name="text">
-            <string>Browse...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="1" column="0">
         <widget class="QLabel" name="qwen3Label">
          <property name="text">
           <string>Qwen3 Model:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="0" column="1">
         <layout class="QHBoxLayout" name="qwen3Layout">
          <item>
           <widget class="QLineEdit" name="qwen3ModelEdit"/>
@@ -146,14 +125,14 @@
          </item>
         </layout>
        </item>
-       <item row="2" column="0">
+       <item row="1" column="0">
         <widget class="QLabel" name="textEncoderLabel">
          <property name="text">
           <string>Text Encoder Model:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="1" column="1">
         <layout class="QHBoxLayout" name="textEncoderLayout">
          <item>
           <widget class="QLineEdit" name="textEncoderEdit"/>
@@ -167,14 +146,14 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="ditLabel">
          <property name="text">
           <string>DiT Model:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="2" column="1">
         <layout class="QHBoxLayout" name="ditLayout">
          <item>
           <widget class="QLineEdit" name="ditModelEdit"/>
@@ -188,14 +167,14 @@
          </item>
         </layout>
        </item>
-       <item row="4" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="vaeLabel">
          <property name="text">
           <string>VAE Model:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="3" column="1">
         <layout class="QHBoxLayout" name="vaeLayout">
          <item>
           <widget class="QLineEdit" name="vaeModelEdit"/>

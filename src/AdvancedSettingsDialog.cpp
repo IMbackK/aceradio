@@ -25,11 +25,6 @@ QString AdvancedSettingsDialog::getJsonTemplate() const
 	return ui->jsonTemplateEdit->toPlainText();
 }
 
-QString AdvancedSettingsDialog::getAceStepPath() const
-{
-	return ui->aceStepPathEdit->text();
-}
-
 QString AdvancedSettingsDialog::getQwen3ModelPath() const
 {
 	return ui->qwen3ModelEdit->text();
@@ -65,11 +60,6 @@ void AdvancedSettingsDialog::setJsonTemplate(const QString &templateStr)
 	ui->jsonTemplateEdit->setPlainText(templateStr);
 }
 
-void AdvancedSettingsDialog::setAceStepPath(const QString &path)
-{
-	ui->aceStepPathEdit->setText(path);
-}
-
 void AdvancedSettingsDialog::setQwen3ModelPath(const QString &path)
 {
 	ui->qwen3ModelEdit->setText(path);
@@ -98,15 +88,6 @@ void AdvancedSettingsDialog::setLowVramMode(bool enabled)
 void AdvancedSettingsDialog::setFlashAttention(bool enabled)
 {
 	ui->flashAttentionCheckBox->setChecked(enabled);
-}
-
-void AdvancedSettingsDialog::on_aceStepBrowseButton_clicked()
-{
-	QString dir = QFileDialog::getExistingDirectory(this, "Select AceStep Build Directory", ui->aceStepPathEdit->text());
-	if (!dir.isEmpty())
-	{
-		ui->aceStepPathEdit->setText(dir);
-	}
 }
 
 void AdvancedSettingsDialog::on_qwen3BrowseButton_clicked()

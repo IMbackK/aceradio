@@ -24,7 +24,6 @@ public:
 
 	// Getters for settings
 	QString getJsonTemplate() const;
-	QString getAceStepPath() const;
 	QString getQwen3ModelPath() const;
 	QString getTextEncoderModelPath() const;
 	QString getDiTModelPath() const;
@@ -34,7 +33,6 @@ public:
 
 	// Setters for settings
 	void setJsonTemplate(const QString &templateStr);
-	void setAceStepPath(const QString &path);
 	void setQwen3ModelPath(const QString &path);
 	void setTextEncoderModelPath(const QString &path);
 	void setDiTModelPath(const QString &path);
@@ -43,7 +41,6 @@ public:
 	void setFlashAttention(bool enabled);
 
 private slots:
-	void on_aceStepBrowseButton_clicked();
 	void on_qwen3BrowseButton_clicked();
 	void on_textEncoderBrowseButton_clicked();
 	void on_ditBrowseButton_clicked();
